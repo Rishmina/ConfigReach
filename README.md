@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/sauravsingla/ConfigReach/actions/workflows/ci.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml)
+[![Reproducibility](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](pyproject.toml)
@@ -47,6 +48,8 @@ configreach scan examples/polyglot --format html --output configreach.html
 configreach plan examples/combinations --format markdown
 configreach plan examples/combinations --fixture pytest --output configreach_cases.py
 configreach workspace . --format json --output configreach-workspaces.json
+configreach adapters --format json
+configreach reproduce examples/combinations --runs 3
 ```
 
 ## Observable metrics — no opaque AI score
@@ -101,6 +104,8 @@ configreach plan [PATH]
 configreach plan [PATH] --strength 3 --max-cases 40
 configreach plan [PATH] --fixture pytest|jest|go|shell
 configreach workspace [PATH]
+configreach adapters
+configreach reproduce [PATH] --runs 3
 configreach diff origin/main...HEAD [PATH]
 configreach pr-comment origin/main...HEAD [PATH]
 configreach doctor [PATH]
@@ -139,7 +144,7 @@ Exporters provide configuration cases only; they deliberately do not invent expe
 
 ## Monorepos and workspace-local incremental caching
 
-`configreach workspace` detects `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, Maven/Gradle manifests and `.csproj` files. Each workspace receives an independent `.configreach/cache/` boundary, so changing one package does not invalidate unrelated warmed workspace caches. Parent workspaces ignore nested workspace directories to avoid double counting.
+`configreach workspace` detects Python, Node, Go, Rust, Maven/Gradle and `.csproj` workspace roots. Each workspace receives an independent `.configreach/cache/` boundary, so changing one package does not invalidate unrelated warmed workspace caches. Parent workspaces ignore nested workspace directories to avoid double counting.
 
 ```bash
 configreach workspace .
@@ -148,6 +153,26 @@ configreach workspace . --format json --output workspaces.json
 ```
 
 The normal `configreach scan .` remains the combined repository view. See [docs/workspaces.md](docs/workspaces.md).
+
+## Adapter API and optional parser-backed plugins
+
+The base package remains dependency-free, but external deterministic adapters can register through the `configreach.adapters` entry-point group. Adapter API v1 includes compatibility version, parser identity, determinism declaration and capability metadata.
+
+```bash
+configreach adapters
+configreach adapters --format json
+```
+
+ConfigReach rejects incompatible or explicitly non-deterministic plugins without crashing the core scanner. A real optional tree-sitter JavaScript adapter example lives under [`examples/plugins/tree_sitter_js`](examples/plugins/tree_sitter_js/); installing it is separate from installing ConfigReach. See [docs/plugin-sdk.md](docs/plugin-sdk.md) and [docs/adapter-capabilities.md](docs/adapter-capabilities.md).
+
+## Reproducibility verification
+
+```bash
+configreach reproduce .
+configreach reproduce . --runs 5 --format json --output repro.json
+```
+
+Repeated scans are uncached and converted to canonical JSON before SHA-256 hashing. Absolute root, timing and cache metadata are excluded because they are execution-environment metadata, not analysis semantics. The repository's reproducibility workflow compares canonical digests produced on **Ubuntu, macOS and Windows** and fails if they differ. See [docs/reproducibility.md](docs/reproducibility.md).
 
 ## CI gating
 
@@ -237,10 +262,6 @@ jobs:
 
 Markdown output can be appended to the job summary, SARIF can be uploaded to Code Scanning, and the repository includes an optional PR-comment workflow.
 
-## Plugin SDK
-
-Third-party packages can register deterministic adapters through the `configreach.adapters` Python entry-point group. Plugin failures become scanner warnings rather than crashing the scan. The core intentionally has zero runtime dependencies. See [docs/plugin-sdk.md](docs/plugin-sdk.md).
-
 ## Benchmark and testing
 
 ```bash
@@ -248,9 +269,10 @@ python benchmarks/bench_scan.py 1000
 python -m pip install -e ".[dev]"
 pytest
 python -m compileall -q src tests
+configreach reproduce examples/combinations --runs 3
 ```
 
-The suite covers language/config discovery, deployment sources, validators, Pydantic/feature flags, branch provenance, combination metrics, real Git PR comparison, baselines, cache behavior, workspace-local invalidation, planners, fixture exporters, HTML/SARIF/JSON/Markdown reporters and CLI policies.
+The suite covers language/config discovery, deployment sources, validators, Pydantic/feature flags, branch provenance, combination metrics, real Git PR comparison, baselines, cache behavior, workspace-local invalidation, planners, fixture exporters, plugin compatibility, reproducibility, HTML/SARIF/JSON/Markdown reporters and CLI policies.
 
 ## Design principles
 
@@ -258,13 +280,7 @@ The suite covers language/config discovery, deployment sources, validators, Pyda
 - No network, telemetry, model inference or paid API in the core.
 - Static scanning never executes target application code.
 - Runtime tracing is explicit opt-in.
-- Sensitive values are redacted before report serialization.
-- Unknown is preferable to fabricated certainty.
-- Every finding has inspectable source provenance.
-- Machine-readable result semantics are reproducible.
+- Unknown semantics stay unknown rather than being guessed.
+- Machine output is designed for deterministic CI use.
 
-See [architecture](docs/architecture.md), [metrics](docs/metrics.md), [planning](docs/planning.md), [workspaces](docs/workspaces.md), [fixture exporters](docs/fixtures.md), [threat model](docs/threat-model.md), [plugin SDK](docs/plugin-sdk.md) and [roadmap](docs/roadmap.md).
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+See [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/roadmap.md](docs/roadmap.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
