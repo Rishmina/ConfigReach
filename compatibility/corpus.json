@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "name": "basic-python-env",
+      "path": "examples/basic",
+      "required_keys": ["PAYMENT_MODE", "ENABLE_IDEMPOTENCY", "REGION"]
+    },
+    {
+      "name": "polyglot-deployment",
+      "path": "examples/polyglot",
+      "required_keys": ["PAYMENT_MODE", "REGION", "API_BASE_URL", "DEBUG_MODE", "SETTLEMENT_MODE"]
+    },
+    {
+      "name": "framework-domains",
+      "path": "examples/frameworks",
+      "required_keys": ["payment.mode", "REGION", "Payment:Timeout", "CheckoutV2", "MODE", "ENABLED"]
+    }
+  ]
+}
