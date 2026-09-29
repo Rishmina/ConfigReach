@@ -2,10 +2,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
+from configreach import __version__
 from configreach.engine import scan
+
+
+def _source_revision() -> str:
+    proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else "unknown"
 
 
 def _score(expected: set[str], predicted: set[str]) -> dict:
@@ -70,6 +83,8 @@ def _markdown(data: dict) -> str:
         "# ConfigReach measured accuracy",
         "",
         "Results from the repository's hand-labelled benchmark corpus. Labels are committed before scoring and include deliberately difficult positive and negative examples.",
+        "",
+        f"Tool: ConfigReach `{data['tool']['version']}` at source revision `{data['tool']['source_revision']}`.",
         "",
         "| Task | Precision | Recall | F1 | TP | FP | FN |",
         "|---|---:|---:|---:|---:|---:|---:|",
@@ -144,6 +159,11 @@ def main() -> int:
     micro_f1 = 2 * micro_precision * micro_recall / (micro_precision + micro_recall) if micro_precision + micro_recall else 0.0
     output = {
         "schema_version": 1,
+        "tool": {
+            "name": "ConfigReach",
+            "version": __version__,
+            "source_revision": _source_revision(),
+        },
         "corpus": corpus["name"],
         "label_policy": corpus["label_policy"],
         "designed_challenges": corpus.get("designed_challenges", []),
