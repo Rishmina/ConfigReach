@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from .models import ScanReport
+from .schemas import REPRODUCIBILITY_SCHEMA_VERSION
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class ReproResult:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 1,
+            "schema_version": REPRODUCIBILITY_SCHEMA_VERSION,
             "reproducible": self.reproducible,
             "runs": [{"run": item.run, "sha256": item.digest} for item in self.runs],
         }
