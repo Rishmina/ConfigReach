@@ -10,7 +10,6 @@ on:
       - "validation/real_world_projects.json"
       - "validation/real_world_reviews.json"
       - "validation/accuracy/**"
-      - ".github/workflows/validation.yml"
 
 permissions:
   contents: write
@@ -72,5 +71,9 @@ jobs:
             echo "Validation results are unchanged."
           else
             git commit -m "validation: publish reproducible evidence"
+            # Validation can run for many minutes. Rebase the generated-results
+            # commit onto the latest main so unrelated documentation commits
+            # that land while scanning do not make the final push stale.
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
