@@ -7,6 +7,7 @@ from typing import Any
 
 from .config import Settings, load_settings
 from .engine import scan
+from .schemas import WORKSPACE_SCHEMA_VERSION
 
 
 WORKSPACE_MARKERS = {
@@ -75,7 +76,7 @@ class WorkspaceReport:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 1,
+            "schema_version": WORKSPACE_SCHEMA_VERSION,
             "root": self.root,
             "summary": {
                 "workspaces": len(self.workspaces),
