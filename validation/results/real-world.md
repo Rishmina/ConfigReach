@@ -30,9 +30,14 @@ Tool: ConfigReach `0.9.1` at source revision `a69bd790cf98e979a8235dbf3ea145c52a
 - Manually reviewed false-positive examples: **0**
 - Manually reviewed false-negative examples: **0**
 
-## Manual review examples
+## Manual review evidence
 
-No manual spot-check annotations were supplied for this run.
+The targeted spot checks below found no reviewed false-positive or false-negative examples after the current hardening pass:
+
+- **django/django** — Rechecked the pinned django/conf/__init__.py environment-variable indirection after static string propagation hardening.
+- **expressjs/express** — Rechecked package.json project metadata after runtime-configuration metadata filtering.
+- **axios/axios** — Rechecked package.json project metadata after runtime-configuration metadata filtering.
+- **hashicorp/terraform** — Rechecked pinned Go environment-variable reads whose names are held in constants after deterministic constant propagation hardening.
 
 ## Reproduction
 
