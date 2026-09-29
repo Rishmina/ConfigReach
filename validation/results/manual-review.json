@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "policy": "Targeted manual spot checks only; entries are not exhaustive repository-wide error rates.",
+  "summary": {
+    "projects_reviewed": 4,
+    "reviewed_false_positives": 4,
+    "reviewed_false_negatives": 3
+  },
+  "reviews": [
+    {
+      "repo": "django/django",
+      "commit": "9332b163a67eabe5bdbf8066b1c5da394be9aa9c",
+      "false_positives": [],
+      "false_negatives": [
+        {
+          "key": "DJANGO_SETTINGS_MODULE",
+          "source": "django/conf/__init__.py",
+          "reason": "Environment-variable name is held in ENVIRONMENT_VARIABLE and passed to os.environ.get indirectly; current Python discovery requires a literal call-site key."
+        }
+      ]
+    },
+    {
+      "repo": "hashicorp/terraform",
+      "commit": "50ffbe06bd26cb5b4d2016e47b51b43aea74a8b0",
+      "false_positives": [],
+      "false_negatives": [
+        {
+          "key": "TF_TEMP_LOG_PATH",
+          "source": "main.go",
+          "reason": "Key is held in envTmpLogPath and passed to os.Getenv; current Go adapter does not perform constant propagation."
+        },
+        {
+          "key": "TF_IN_AUTOMATION",
+          "source": "commands.go",
+          "reason": "Key is held in runningInAutomationEnvName and passed to os.Getenv; current Go adapter does not perform constant propagation."
+        }
+      ]
+    },
+    {
+      "repo": "expressjs/express",
+      "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+      "false_positives": [
+        {
+          "key": "name",
+          "source": "package.json",
+          "reason": "Package identity metadata is not runtime configuration, but generic JSON flattening records it as a settings declaration."
+        },
+        {
+          "key": "version",
+          "source": "package.json",
+          "reason": "Package release metadata is not runtime configuration, but generic JSON flattening records it as a settings declaration."
+        }
+      ],
+      "false_negatives": []
+    },
+    {
+      "repo": "axios/axios",
+      "commit": "2426e03ba9020be31ed013873423cea6b7cd2e67",
+      "false_positives": [
+        {
+          "key": "name",
+          "source": "package.json",
+          "reason": "Package identity metadata is not runtime configuration, but generic JSON flattening records it as a settings declaration."
+        },
+        {
+          "key": "version",
+          "source": "package.json",
+          "reason": "Package release metadata is not runtime configuration, but generic JSON flattening records it as a settings declaration."
+        }
+      ],
+      "false_negatives": []
+    }
+  ]
+}
