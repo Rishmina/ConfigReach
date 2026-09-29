@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "configreach-feature-flags-provider-example"
+version = "0.1.0"
+description = "Example custom configuration-provider adapter for ConfigReach"
+requires-python = ">=3.11"
+dependencies = ["configreach>=0.9"]
+
+[project.entry-points."configreach.adapters"]
+feature-flags-file = "configreach_feature_flags:FeatureFlagsFileAdapter"
+
+[tool.setuptools]
+py-modules = ["configreach_feature_flags"]
