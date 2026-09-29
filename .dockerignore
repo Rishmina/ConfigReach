@@ -1,0 +1,16 @@
+.git
+.github
+.configreach
+.pytest_cache
+__pycache__
+*.py[cod]
+*.egg-info
+build
+dist
+benchmarks
+docs
+examples
+tests
+validation
+huggingface-space
+configreach.html
