@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "src/configreach/**"
+      - ".github/workflows/validation.yml"
       - "validation/run_real_world.py"
       - "validation/real_world_projects.json"
       - "validation/real_world_reviews.json"
@@ -19,7 +20,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  accuracy:
+    name: measured accuracy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ConfigReach from source
+        run: python -m pip install -e .
+      - name: Score hand-labelled accuracy corpus
+        run: |
+          python validation/accuracy/run_accuracy.py \
+            --corpus validation/accuracy/corpus.json \
+            --json validation/results/accuracy.json \
+            --markdown validation/results/accuracy.md
+          cat validation/results/accuracy.md
+      - name: Upload measured accuracy
+        uses: actions/upload-artifact@v4
+        with:
+          name: configreach-measured-accuracy
+          path: |
+            validation/results/accuracy.json
+            validation/results/accuracy.md
+          if-no-files-found: error
+
   validation:
+    name: real-world validation
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -71,9 +99,6 @@ jobs:
             echo "Validation results are unchanged."
           else
             git commit -m "validation: publish reproducible evidence"
-            # Validation can run for many minutes. Rebase the generated-results
-            # commit onto the latest main so unrelated documentation commits
-            # that land while scanning do not make the final push stale.
             git pull --rebase origin main
             git push origin HEAD:main
           fi
