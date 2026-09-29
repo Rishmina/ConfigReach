@@ -8,6 +8,7 @@
 [![CodeQL](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml)
 [![Reproducibility](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml)
 [![Performance](https://github.com/sauravsingla/ConfigReach/actions/workflows/performance.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/performance.yml)
+[![Validation](https://github.com/sauravsingla/ConfigReach/actions/workflows/validation.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/validation.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](pyproject.toml)
@@ -15,6 +16,38 @@
 ConfigReach needs **no GPU, no LLM, no API key, no hosted service, no telemetry and no paid dependency**. Static analysis does not execute the target repository. Machine-readable results are deterministic for the same repository state and configuration.
 
 ![ConfigReach terminal example](docs/demo.svg)
+
+## Real-world validation & measured accuracy
+
+ConfigReach publishes reproducible validation evidence instead of relying only on feature claims.
+
+### External-project validation
+
+The current suite scans **10 pinned, recognizable open-source repositories** across Python, JavaScript, Go, Java/Spring and Terraform: Flask, Django, Pydantic, HTTPX, Express, Axios, Gin, Helm, Spring PetClinic and Terraform.
+
+- **18,016** configuration inputs discovered
+- **639** inputs with detected test/runtime evidence
+- **3.5%** aggregate observed key coverage across the 10-project corpus
+- **1,811.463s** total scan wall time on the recorded GitHub-hosted runner
+- **4** manually reviewed false-positive examples and **3** manually reviewed false-negative examples across targeted spot checks
+
+These projects are external validation targets; their inclusion does not imply endorsement. The coverage figures are ConfigReach observations, not independently labelled ground truth. Exact upstream commit SHAs, runtimes, per-project counts and reviewed FP/FN examples are published in [`validation/results/real-world.md`](validation/results/real-world.md).
+
+### Hand-labelled accuracy benchmark
+
+A separate committed ground-truth corpus measures precision, recall and F1 for the core analysis tasks:
+
+| Task | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| Environment-variable discovery | **100.0%** | **72.7%** | **84.2%** |
+| Feature flags | **50.0%** | **100.0%** | **66.7%** |
+| Configuration declarations | **66.7%** | **90.9%** | **76.9%** |
+| Test evidence | **100.0%** | **100.0%** | **100.0%** |
+| Branch inference | **53.8%** | **100.0%** | **70.0%** |
+
+**Micro precision: 71.7% · Micro recall: 89.2% · Micro F1: 79.5% · Macro F1: 79.6%**
+
+The benchmark intentionally publishes its misses and over-detections rather than hiding them. See [`validation/results/accuracy.md`](validation/results/accuracy.md) for exact false positives/false negatives and [`VALIDATION.md`](VALIDATION.md) for methodology, reproduction steps and claim boundaries.
 
 ## Why configuration coverage?
 
@@ -272,7 +305,7 @@ Tracing is explicit opt-in. The Python tracer records key names plus short SHA-2
 | `CR005` | sensitive-looking configuration has a non-empty static default | error |
 | `CR006` | likely inconsistent names normalize to the same identifier | warning |
 | `CR007` | production-like known value is not exercised | warning |
-| `CR008` | explicit test values only exercise defaults | warning |
+| `CR008` | explicit tests only exercise defaults | warning |
 | `CR009` | a test mutates the global environment in a potentially leaky way | warning |
 
 Every finding retains source provenance.
