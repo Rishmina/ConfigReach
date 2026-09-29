@@ -18,9 +18,16 @@ class Settings:
     ignores: list[str] = field(default_factory=lambda: list(DEFAULT_IGNORES))
     test_patterns: list[str] = field(default_factory=lambda: [
         "tests/**", "test/**", "**/test_*.py", "**/*_test.py", "**/*.test.js",
-        "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts", "**/*_test.go",
+        "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts", "**/*_test.go", "**/*Test.java",
+        "**/spec/**", "**/__tests__/**",
     ])
     fail_under: float | None = None
+    fail_on: set[str] = field(default_factory=set)
+    baseline: str = ".configreach/baseline.json"
+    trace_file: str = ".configreach/trace.jsonl"
+    cache: bool = True
+    plugins: bool = True
+    max_file_size: int = 2_000_000
 
     def ignored(self, rel: str) -> bool:
         rel = rel.replace("\\", "/")
@@ -29,7 +36,7 @@ class Settings:
     def is_test(self, rel: str) -> bool:
         rel = rel.replace("\\", "/")
         parts = rel.split("/")
-        if "tests" in parts or "test" in parts:
+        if "tests" in parts or "test" in parts or "__tests__" in parts or "spec" in parts:
             return True
         return any(fnmatch.fnmatch(rel, pattern) for pattern in self.test_patterns)
 
@@ -53,4 +60,16 @@ def load_settings(root: Path) -> Settings:
             settings.fail_under = float(section["fail_under"])
         except (TypeError, ValueError):
             pass
+    if isinstance(section.get("fail_on"), list):
+        settings.fail_on = {str(x).lower() for x in section["fail_on"]}
+    if isinstance(section.get("baseline"), str):
+        settings.baseline = section["baseline"]
+    if isinstance(section.get("trace_file"), str):
+        settings.trace_file = section["trace_file"]
+    if isinstance(section.get("cache"), bool):
+        settings.cache = section["cache"]
+    if isinstance(section.get("plugins"), bool):
+        settings.plugins = section["plugins"]
+    if isinstance(section.get("max_file_size"), int) and section["max_file_size"] > 0:
+        settings.max_file_size = section["max_file_size"]
     return settings

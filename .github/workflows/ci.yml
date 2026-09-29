@@ -11,12 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e ".[dev]"
+      - run: python -m compileall -q src tests
       - run: pytest
-      - run: configreach scan examples/basic --format json
+      - run: configreach scan examples/basic --format json --no-cache
+      - run: configreach scan examples/polyglot --format sarif --output /tmp/configreach.sarif --no-cache
+      - run: configreach scan examples/polyglot --format html --output /tmp/configreach.html --no-cache
+      - run: configreach doctor examples/polyglot

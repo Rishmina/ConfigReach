@@ -1,3 +1,8 @@
 [configreach]
 fail_under = 0
-ignore = ["examples/generated/**"]
+fail_on = ["error"]
+ignore = ["vendor/**", "generated/**"]
+baseline = ".configreach/baseline.json"
+trace_file = ".configreach/trace.jsonl"
+cache = true
+plugins = true

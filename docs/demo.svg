@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="510" viewBox="0 0 1040 510" role="img" aria-labelledby="title desc">
+  <title id="title">ConfigReach terminal report</title>
+  <desc id="desc">Example terminal output showing configuration coverage, value coverage and uncovered configuration.</desc>
+  <rect width="1040" height="510" rx="18" fill="#0d1117"/>
+  <circle cx="30" cy="28" r="7" fill="#ff5f56"/><circle cx="52" cy="28" r="7" fill="#ffbd2e"/><circle cx="74" cy="28" r="7" fill="#27c93f"/>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#c9d1d9">
+    <text x="30" y="75" fill="#58a6ff">$ configreach scan .</text>
+    <text x="30" y="112">ConfigReach — configuration coverage</text>
+    <text x="30" y="140">=======================================</text>
+    <text x="30" y="176">Configuration inputs:       12</text>
+    <text x="30" y="206">Covered inputs:              9</text>
+    <text x="30" y="236">Uncovered inputs:            3</text>
+    <text x="30" y="266" fill="#3fb950">Configuration coverage:     75.0%</text>
+    <text x="30" y="296">Known-value coverage:       66.7%</text>
+    <text x="30" y="326">Boolean coverage:           50.0%</text>
+    <text x="30" y="356">Pairwise combo coverage:    60.0%</text>
+    <text x="30" y="402" fill="#f85149">Uncovered configuration:</text>
+    <text x="55" y="434">- REGION (app.py)</text>
+    <text x="55" y="462">- SETTLEMENT_MODE (main.go)</text>
+    <text x="55" y="490">- DEBUG_MODE (frontend.ts)</text>
+  </g>
+</svg>

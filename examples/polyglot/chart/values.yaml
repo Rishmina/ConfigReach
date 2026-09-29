@@ -1,0 +1,5 @@
+service:
+  replicas: 2
+  timeoutSeconds: 30
+feature:
+  checkout: false

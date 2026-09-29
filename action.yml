@@ -6,20 +6,46 @@ inputs:
     required: false
     default: .
   fail-under:
-    description: Minimum configuration coverage percentage
+    description: Minimum configuration key coverage percentage
     required: false
     default: "0"
+  fail-on:
+    description: Optional finding policy (uncovered, undeclared, untested-values, unsafe-default, warning, error, CRxxx)
+    required: false
+    default: "error"
   format:
-    description: Output format (text, json, markdown, sarif)
+    description: Output format (text, json, markdown, sarif, html)
     required: false
     default: markdown
+  output:
+    description: Optional report path
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
     - shell: bash
       run: python -m pip install "${{ github.action_path }}"
     - shell: bash
-      run: configreach scan "${{ inputs.path }}" --format "${{ inputs.format }}" --fail-under "${{ inputs.fail-under }}"
+      env:
+        CONFIGREACH_PATH: ${{ inputs.path }}
+        CONFIGREACH_FORMAT: ${{ inputs.format }}
+        CONFIGREACH_FAIL_UNDER: ${{ inputs.fail-under }}
+        CONFIGREACH_FAIL_ON: ${{ inputs.fail-on }}
+        CONFIGREACH_OUTPUT: ${{ inputs.output }}
+      run: |
+        set -euo pipefail
+        output="$CONFIGREACH_OUTPUT"
+        if [[ -z "$output" && "$CONFIGREACH_FORMAT" == "markdown" ]]; then
+          output="${RUNNER_TEMP}/configreach.md"
+        fi
+        args=(scan "$CONFIGREACH_PATH" --format "$CONFIGREACH_FORMAT" --fail-under "$CONFIGREACH_FAIL_UNDER")
+        if [[ -n "$CONFIGREACH_FAIL_ON" ]]; then args+=(--fail-on "$CONFIGREACH_FAIL_ON"); fi
+        if [[ -n "$output" ]]; then args+=(--output "$output"); fi
+        configreach "${args[@]}"
+        if [[ "$CONFIGREACH_FORMAT" == "markdown" && -n "$output" && -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+          cat "$output" >> "$GITHUB_STEP_SUMMARY"
+        fi
 branding:
   icon: activity
   color: blue

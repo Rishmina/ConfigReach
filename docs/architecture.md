@@ -1,23 +1,37 @@
 # Architecture
 
-ConfigReach separates **discovery**, **coverage evidence**, and **reporting**.
+ConfigReach separates **discovery**, **coverage evidence**, **policy**, and **reporting** so every result remains inspectable and reproducible.
 
-1. `discover.py` walks repository files using explicit ignore rules.
-2. Python source is parsed with `ast`; other language environment reads use conservative patterns.
-3. Declaration adapters inspect dotenv, JSON, TOML, INI, YAML, Terraform and Make files.
-4. Test files contribute key-level coverage evidence and, when assignments are statically visible, value-level evidence.
-5. `models.py` stores provenance for every read, declaration and test mention.
-6. `reporters.py` converts the same deterministic model into text, JSON, Markdown or SARIF.
-7. `tracer.py` provides an optional Python-only runtime trace that fingerprints values instead of storing them.
+1. `discover.py` walks eligible repository files using explicit ignore rules and a size cap.
+2. Python source is parsed with `ast`; selected cross-language idioms use conservative deterministic patterns.
+3. Built-in declaration adapters inspect dotenv templates, JSON, TOML, INI/CFG, properties, YAML, Dockerfiles, Terraform, Makefiles, Helm values, Pydantic settings and GitHub Actions variable/secret references.
+4. Test files contribute key-level evidence and, when assignments are statically visible, value-level evidence.
+5. Optional runtime tracing records configuration key names and value fingerprints only; raw runtime values are not persisted.
+6. `models.py` stores provenance, known values, validators, blast radius and deterministic findings.
+7. `baseline.py` suppresses legacy uncovered keys from CI gating without removing them from the report.
+8. `cache.py` caches the deterministic scan model using repository-file metadata fingerprints. Cache state is not part of machine-readable result semantics.
+9. `plugins.py` loads third-party adapters through the `configreach.adapters` Python entry-point group. Plugin failures become scanner warnings rather than crashing the core.
+10. `reporters.py` renders the same model as text, JSON, Markdown, SARIF or a standalone searchable HTML graph.
 
-## Design rules
+## Coverage model
 
-- Offline and CPU-only by default.
-- No model or API call in the core engine.
-- Every finding retains source provenance.
-- Unknown is preferable to fabricated certainty.
-- Language support levels are documented honestly.
+ConfigReach deliberately exposes multiple metrics instead of collapsing everything into an opaque score:
 
-## Adapter roadmap
+- **Key coverage**: discovered configuration inputs with detected test or runtime evidence / effective discovered inputs.
+- **Value coverage**: statically observed tested values / explicitly known expected values.
+- **Boolean coverage**: tested true/false states / known boolean states.
+- **Pairwise combination coverage**: configuration key pairs read from the same application file that are also referenced together in at least one test file.
 
-The initial release has deep Python environment/CLI parsing and conservative cross-language environment-read detection. Future adapters can add AST-backed JavaScript/TypeScript, Go, Java and Rust analysis without changing the report model.
+Pairwise coverage is a conservative co-occurrence metric, not a claim that every Cartesian product of every configuration value has been tested.
+
+## Monorepos
+
+Package roots are detected from `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, Maven and Gradle manifests. The v0.2 report exposes these roots and keeps source paths intact so downstream tooling can group findings per package. Cross-package incremental invalidation is a future optimization; the current persistent cache invalidates the repository scan when eligible file metadata changes.
+
+## Determinism rules
+
+- No network calls, model inference or telemetry in the core.
+- Files are processed in normalized sorted path order.
+- Machine-readable outputs exclude timing and cache-hit metadata.
+- Unknown configuration semantics remain unknown instead of being guessed.
+- Sensitive-looking values are redacted before they enter report serialization.
