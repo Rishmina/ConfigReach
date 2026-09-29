@@ -4,7 +4,7 @@ Static scans of pinned upstream commits. Target projects are not executed and th
 Runtime is wall-clock scan time on the recorded runner and is therefore performance evidence, not a cross-machine guarantee.
 Manual false-positive/false-negative entries are targeted spot checks, not exhaustive repository-wide error rates; measured accuracy comes from the hand-labelled corpus.
 
-The scan counts below were produced by the successful external-project validation run on ConfigReach 0.9.1. The manual-review columns were subsequently populated from committed human spot checks; they do not alter the scan counts or coverage values.
+Tool: ConfigReach `0.9.1` at source revision `c9b5d5d1b9c62bcc45ad71e90677535943897472`.
 
 | Project | Ecosystem | Configs | Covered | Coverage | Runtime | Reviewed FP | Reviewed FN |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -26,7 +26,7 @@ The scan counts below were produced by the successful external-project validatio
 - Inputs with detected test/runtime evidence: **639**
 - Aggregate key coverage: **3.5%**
 - Total scan wall time: **1811.463s**
-- Projects with targeted manual review: **4**
+- Projects with manual spot checks: **4**
 - Manually reviewed false-positive examples: **4**
 - Manually reviewed false-negative examples: **3**
 
@@ -34,24 +34,30 @@ The scan counts below were produced by the successful external-project validatio
 
 ### django/django
 
-- **FN** `DJANGO_SETTINGS_MODULE` (`django/conf/__init__.py`) — the environment-variable name is stored in `ENVIRONMENT_VARIABLE` and passed to `os.environ.get` indirectly; the current Python discovery path requires a literal key at the call site.
+Review scope: Reviewed environment-variable indirection in django/conf/__init__.py at the pinned commit.
 
-### hashicorp/terraform
-
-- **FN** `TF_TEMP_LOG_PATH` (`main.go`) — the key is held in `envTmpLogPath` and passed to `os.Getenv`; the current Go adapter does not perform constant propagation.
-- **FN** `TF_IN_AUTOMATION` (`commands.go`) — the key is held in `runningInAutomationEnvName` and passed to `os.Getenv`; the current Go adapter does not perform constant propagation.
+- **FN** `DJANGO_SETTINGS_MODULE` (django/conf/__init__.py) — The environment-variable name is stored in ENVIRONMENT_VARIABLE and passed to os.environ.get indirectly; the current Python discovery path requires a literal key at the call site.
 
 ### expressjs/express
 
-- **FP** `name` (`package.json`) — package identity metadata is not runtime configuration, but generic JSON flattening currently records it as a settings declaration.
-- **FP** `version` (`package.json`) — package release metadata is not runtime configuration, but generic JSON flattening currently records it as a settings declaration.
+Review scope: Reviewed package.json metadata alongside real NODE_ENV reads at the pinned commit.
+
+- **FP** `name` (package.json) — The package name is project metadata, not an application runtime configuration input, but generic JSON flattening currently records it as a settings declaration.
+- **FP** `version` (package.json) — The package version is release metadata rather than runtime configuration; generic JSON flattening currently records it as a settings declaration.
 
 ### axios/axios
 
-- **FP** `name` (`package.json`) — package identity metadata is not runtime configuration, but generic JSON flattening currently records it as a settings declaration.
-- **FP** `version` (`package.json`) — package release metadata is not runtime configuration, but generic JSON flattening currently records it as a settings declaration.
+Review scope: Reviewed package.json metadata in a large JavaScript repository at the pinned commit.
 
-See [`manual-review.md`](manual-review.md) and [`../real_world_reviews.json`](../real_world_reviews.json) for the review source of truth.
+- **FP** `name` (package.json) — The package identity is metadata, not runtime configuration; generic JSON flattening treats it as a configuration declaration.
+- **FP** `version` (package.json) — The package version is metadata, not runtime configuration; generic JSON flattening treats it as a configuration declaration.
+
+### hashicorp/terraform
+
+Review scope: Reviewed Go environment-variable reads whose names are held in constants at the pinned commit.
+
+- **FN** `TF_TEMP_LOG_PATH` (main.go) — Terraform defines envTmpLogPath = "TF_TEMP_LOG_PATH" and calls os.Getenv(envTmpLogPath); the current Go adapter recognizes literal os.Getenv/os.LookupEnv keys only.
+- **FN** `TF_IN_AUTOMATION` (commands.go) — Terraform defines runningInAutomationEnvName = "TF_IN_AUTOMATION" and calls os.Getenv(runningInAutomationEnvName); constant propagation across the Go file is not implemented.
 
 ## Reproduction
 
@@ -59,6 +65,4 @@ See [`manual-review.md`](manual-review.md) and [`../real_world_reviews.json`](..
 python validation/run_real_world.py --manifest validation/real_world_projects.json --reviews validation/real_world_reviews.json --json validation/results/real-world.json --markdown validation/results/real-world.md
 ```
 
-Runner for the published scan: `Linux-6.17.0-1022-azure-x86_64-with-glibc2.39` / Python `3.12.14`.
-
-The external repositories are pinned by commit SHA in `validation/real_world_projects.json`. Inclusion here is validation against external code, not endorsement by those projects.
+Runner: `Linux-6.17.0-1022-azure-x86_64-with-glibc2.39` / Python `3.12.14`.

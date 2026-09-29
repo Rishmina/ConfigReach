@@ -78,11 +78,17 @@
         "CR009": 6
       },
       "manual_review": {
-        "false_negative_count": 0,
-        "false_negatives": [],
+        "false_negative_count": 1,
+        "false_negatives": [
+          {
+            "key": "DJANGO_SETTINGS_MODULE",
+            "reason": "The environment-variable name is stored in ENVIRONMENT_VARIABLE and passed to os.environ.get indirectly; the current Python discovery path requires a literal key at the call site.",
+            "source": "django/conf/__init__.py"
+          }
+        ],
         "false_positive_count": 0,
         "false_positives": [],
-        "scope": "not-yet-reviewed"
+        "scope": "Reviewed environment-variable indirection in django/conf/__init__.py at the pinned commit."
       },
       "repo": "django/django",
       "runtime_seconds": 75.942376,
@@ -194,9 +200,20 @@
       "manual_review": {
         "false_negative_count": 0,
         "false_negatives": [],
-        "false_positive_count": 0,
-        "false_positives": [],
-        "scope": "not-yet-reviewed"
+        "false_positive_count": 2,
+        "false_positives": [
+          {
+            "key": "name",
+            "reason": "The package name is project metadata, not an application runtime configuration input, but generic JSON flattening currently records it as a settings declaration.",
+            "source": "package.json"
+          },
+          {
+            "key": "version",
+            "reason": "The package version is release metadata rather than runtime configuration; generic JSON flattening currently records it as a settings declaration.",
+            "source": "package.json"
+          }
+        ],
+        "scope": "Reviewed package.json metadata alongside real NODE_ENV reads at the pinned commit."
       },
       "repo": "expressjs/express",
       "runtime_seconds": 0.821299,
@@ -230,9 +247,20 @@
       "manual_review": {
         "false_negative_count": 0,
         "false_negatives": [],
-        "false_positive_count": 0,
-        "false_positives": [],
-        "scope": "not-yet-reviewed"
+        "false_positive_count": 2,
+        "false_positives": [
+          {
+            "key": "name",
+            "reason": "The package identity is metadata, not runtime configuration; generic JSON flattening treats it as a configuration declaration.",
+            "source": "package.json"
+          },
+          {
+            "key": "version",
+            "reason": "The package version is metadata, not runtime configuration; generic JSON flattening treats it as a configuration declaration.",
+            "source": "package.json"
+          }
+        ],
+        "scope": "Reviewed package.json metadata in a large JavaScript repository at the pinned commit."
       },
       "repo": "axios/axios",
       "runtime_seconds": 148.796704,
@@ -374,11 +402,22 @@
         "CR006": 18
       },
       "manual_review": {
-        "false_negative_count": 0,
-        "false_negatives": [],
+        "false_negative_count": 2,
+        "false_negatives": [
+          {
+            "key": "TF_TEMP_LOG_PATH",
+            "reason": "Terraform defines envTmpLogPath = \"TF_TEMP_LOG_PATH\" and calls os.Getenv(envTmpLogPath); the current Go adapter recognizes literal os.Getenv/os.LookupEnv keys only.",
+            "source": "main.go"
+          },
+          {
+            "key": "TF_IN_AUTOMATION",
+            "reason": "Terraform defines runningInAutomationEnvName = \"TF_IN_AUTOMATION\" and calls os.Getenv(runningInAutomationEnvName); constant propagation across the Go file is not implemented.",
+            "source": "commands.go"
+          }
+        ],
         "false_positive_count": 0,
         "false_positives": [],
-        "scope": "not-yet-reviewed"
+        "scope": "Reviewed Go environment-variable reads whose names are held in constants at the pinned commit."
       },
       "repo": "hashicorp/terraform",
       "runtime_seconds": 1514.837172,
@@ -394,8 +433,14 @@
     "covered_inputs": 639,
     "projects_requested": 10,
     "projects_scanned": 10,
-    "reviewed_false_negatives": 0,
-    "reviewed_false_positives": 0,
+    "projects_with_manual_review": 4,
+    "reviewed_false_negatives": 3,
+    "reviewed_false_positives": 4,
     "runtime_seconds": 1811.462762
+  },
+  "tool": {
+    "name": "ConfigReach",
+    "source_revision": "c9b5d5d1b9c62bcc45ad71e90677535943897472",
+    "version": "0.9.1"
   }
 }
