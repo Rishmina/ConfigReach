@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "configreach"
-version = "0.3.0"
+version = "0.4.0"
 description = "Deterministic configuration coverage for software repositories"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,7 +28,7 @@ dependencies = []
 dev = ["pytest>=8", "pytest-cov>=5"]
 
 [project.scripts]
-configreach = "configreach.cli:main"
+configreach = "configreach.entrypoint:main"
 
 [project.entry-points."configreach.adapters"]
 # Third-party packages register adapters in this group. The core intentionally

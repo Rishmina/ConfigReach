@@ -19,7 +19,7 @@ class Settings:
     test_patterns: list[str] = field(default_factory=lambda: [
         "tests/**", "test/**", "**/test_*.py", "**/*_test.py", "**/*.test.js",
         "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts", "**/*_test.go", "**/*Test.java",
-        "**/spec/**", "**/__tests__/**",
+        "**/*Tests.cs", "**/*.Tests.cs", "**/spec/**", "**/__tests__/**",
     ])
     fail_under: float | None = None
     fail_on: set[str] = field(default_factory=set)
@@ -37,6 +37,18 @@ class Settings:
         rel = rel.replace("\\", "/")
         parts = rel.split("/")
         if "tests" in parts or "test" in parts or "__tests__" in parts or "spec" in parts:
+            return True
+        name = parts[-1] if parts else rel
+        conventional = (
+            (name.startswith("test_") and name.endswith(".py")),
+            name.endswith("_test.py"),
+            name.endswith("_test.go"),
+            name.endswith("Test.java"),
+            name.endswith("Tests.cs"),
+            name.endswith(".test.js"), name.endswith(".test.ts"),
+            name.endswith(".spec.js"), name.endswith(".spec.ts"),
+        )
+        if any(conventional):
             return True
         return any(fnmatch.fnmatch(rel, pattern) for pattern in self.test_patterns)
 

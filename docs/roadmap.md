@@ -24,16 +24,20 @@
 - Findings for explicit default-only testing and global-environment test mutation.
 - Cross-version cache schema invalidation and Python 3.11–3.13 CI coverage.
 
-## v0.4 — deeper language semantics
-- Parser/AST-backed JavaScript/TypeScript and Go adapters while preserving a zero-dependency core through optional adapters.
-- Framework adapters for Spring, .NET configuration and additional feature-flag SDKs.
-- Changed-line dependency slicing beyond file-level touched-key detection.
-- Workspace-local incremental cache invalidation for very large monorepos.
-- Richer validator-domain extraction across languages.
+## v0.4 — deeper language and framework semantics ✅
+- Function-scoped deterministic JavaScript/TypeScript and Go adapters while preserving a zero-runtime-dependency core.
+- Java Spring discovery for `@Value`, `Environment.getProperty`, `@ConfigurationProperties` and common feature-flag calls.
+- .NET/C# discovery for environment variables, `IConfiguration`, `GetValue` defaults and feature flags.
+- JSON Schema finite-domain/default/validator extraction.
+- Terraform bool and finite validation-domain extraction.
+- Changed-line PR dependency slicing with file-level fallback only where line provenance is unavailable.
+- Root-level test-name detection for Go, Java, .NET, Python and JS/TS conventions.
 
-## v0.5 — testing guidance
+## v0.5 — scale and testing guidance
+- Workspace-local incremental cache invalidation for very large monorepos.
 - Deterministic N-wise combination planning without executing generated tests.
 - Test fixture suggestions exported as structured deterministic data, not generated prose.
+- Richer framework validator-domain extraction and optional parser-backed external adapters.
 
 ## v1.0
 - Stable report schema and plugin contract.

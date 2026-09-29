@@ -1,0 +1,1 @@
+{"type":"object","properties":{"MODE":{"type":"string","enum":["dev","prod"],"default":"dev"},"ENABLED":{"type":"boolean"}}}
