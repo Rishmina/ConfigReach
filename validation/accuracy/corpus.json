@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "name": "ConfigReach hand-labelled accuracy corpus v1",
+  "label_policy": {
+    "env_var_discovery": "Runtime environment-variable inputs that a human reviewer can identify from source, including statically recoverable intent expressed through simple indirection; declarations alone do not count.",
+    "feature_flags": "Runtime boolean/variant flag lookups whose call is semantically a feature-flag decision; unrelated methods named variation do not count.",
+    "config_declarations": "Declarations of application/runtime/deployment configuration. Package/project metadata such as package.json name/version/scripts and pyproject project metadata do not count.",
+    "test_evidence": "Configuration keys for which a human reviewer can see a test intentionally supplies or exercises the key, including a small helper abstraction.",
+    "branch_inference": "Explicit configuration-dependent decision states. A finite boolean type without an actual decision branch does not itself count as a branch."
+  },
+  "files": {
+    "src/app.py": "import os\n\nPAYMENT_MODE = os.getenv(\"PAYMENT_MODE\", \"sandbox\")\nREGION = os.environ[\"REGION\"]\n\nif PAYMENT_MODE == \"live\":\n    processor = \"real\"\n\nif is_enabled(\"new-checkout\"):\n    checkout = \"new\"\n\nprefix = \"DYNAMIC\"\nDYNAMIC = os.getenv(prefix + \"_TOKEN\")\n\ndef unrelated_statistics(stats):\n    return stats.variation(\"coefficient-of-variation\")\n",
+    "src/settings.py": "from pydantic_settings import BaseSettings\n\nclass AppSettings(BaseSettings):\n    api_url: str = \"https://example.invalid\"\n    debug: bool = False\n",
+    "src/web.js": "const endpoint = process.env.JS_API_URL;\nconst { JS_DESTRUCTURED } = process.env;\nif (process.env.NODE_MODE === \"prod\") { console.log(endpoint); }\nconst banner = client.variation(\"beta-banner\", false);\nconst spread = stats.variation(\"stddev\");\n",
+    "src/service.go": "package service\n\nimport \"os\"\n\nfunc mode() string {\n    region := os.Getenv(\"GO_REGION\")\n    if os.Getenv(\"GO_MODE\") == \"prod\" { return region }\n    key := \"GO_DYNAMIC\"\n    _ = os.Getenv(key)\n    return region\n}\n",
+    "src/App.java": "import org.springframework.beans.factory.annotation.Value;\n\nclass App {\n    String region = System.getenv(\"JAVA_REGION\");\n    @Value(\"${service.mode:dev}\")\n    String mode;\n}\n",
+    "src/Program.cs": "using System;\n\nclass Program {\n    string region = Environment.GetEnvironmentVariable(\"DOTNET_REGION\");\n    string mode = configuration[\"Payments:Mode\"];\n}\n",
+    "infra/variables.tf": "variable \"region\" {\n  type = string\n  default = \"us-east-1\"\n}\n\nvariable \"mode\" {\n  type = string\n  default = \"sandbox\"\n  validation {\n    condition = contains([\"sandbox\", \"prod\"], var.mode)\n    error_message = \"invalid mode\"\n  }\n}\n",
+    ".env.example": "ENV_TEMPLATE=demo\nAPI_TOKEN=\n",
+    "Dockerfile": "ARG BUILD_MODE=release\nENV APP_ENV=production\n",
+    "config.json": "{\"service\": {\"timeout\": 30}, \"logging\": {\"level\": \"info\"}}\n",
+    "package.json": "{\"name\": \"benchmark-app\", \"version\": \"1.0.0\", \"scripts\": {\"test\": \"node test.js\"}}\n",
+    "pyproject.toml": "[project]\nname = \"benchmark-app\"\nversion = \"1.0.0\"\n",
+    "tests/test_app.py": "def test_live(monkeypatch):\n    monkeypatch.setenv(\"PAYMENT_MODE\", \"live\")\n\ndef test_flag():\n    assert is_enabled(\"new-checkout\") in {True, False}\n\ndef test_region_via_helper():\n    set_config(\"REGION\", \"eu\")\n",
+    "tests/web.test.js": "process.env.JS_API_URL = \"http://test.invalid\";\nclient.variation(\"beta-banner\", true);\n",
+    "src/service_test.go": "package service\n\nimport \"testing\"\n\nfunc TestRegion(t *testing.T) {\n    t.Setenv(\"GO_REGION\", \"us\")\n}\n"
+  },
+  "labels": {
+    "env_var_discovery": [
+      "DOTNET_REGION",
+      "DYNAMIC_TOKEN",
+      "GO_DYNAMIC",
+      "GO_MODE",
+      "GO_REGION",
+      "JAVA_REGION",
+      "JS_API_URL",
+      "JS_DESTRUCTURED",
+      "NODE_MODE",
+      "PAYMENT_MODE",
+      "REGION"
+    ],
+    "feature_flags": ["beta-banner", "new-checkout"],
+    "config_declarations": [
+      "API_TOKEN",
+      "API_URL",
+      "APP_ENV",
+      "BUILD_MODE",
+      "DEBUG",
+      "ENV_TEMPLATE",
+      "logging.level",
+      "mode",
+      "region",
+      "service.mode",
+      "service.timeout"
+    ],
+    "test_evidence": ["GO_REGION", "JS_API_URL", "PAYMENT_MODE", "REGION", "beta-banner", "new-checkout"],
+    "branch_inference": [
+      "GO_MODE::prod",
+      "NODE_MODE::prod",
+      "PAYMENT_MODE::live",
+      "beta-banner::false",
+      "beta-banner::true",
+      "new-checkout::false",
+      "new-checkout::true"
+    ]
+  },
+  "designed_challenges": [
+    "Python environment key built from string concatenation",
+    "JavaScript process.env destructuring",
+    "Go os.Getenv using a variable key",
+    "Unrelated methods named variation that should not be feature flags",
+    "package.json and pyproject.toml project metadata that should not be runtime configuration declarations",
+    "Test evidence hidden behind a small helper function",
+    "Boolean settings domains that should not be counted as decision branches without a branch"
+  ]
+}
