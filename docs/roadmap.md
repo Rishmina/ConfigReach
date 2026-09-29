@@ -42,14 +42,20 @@
 - Structured JSON fixture suggestions plus text and Markdown renderers.
 - Single-key missing finite values remain actionable even when no multi-key dependency scope is available.
 
-## v0.6 — scale and ecosystem depth
-- Workspace-local incremental cache invalidation for very large monorepos.
-- Richer framework validator-domain extraction.
+## v0.6 — scale and ecosystem depth ✅
+- `configreach workspace` with manifest-defined workspace detection and independent persistent cache boundaries.
+- Parent workspaces ignore nested workspace roots, preventing double counting while preserving incremental invalidation.
+- Richer deterministic validator extraction for Zod, Java Bean Validation, extended JSON Schema and Terraform constraints.
+- Deterministic fixture exporters for pytest, Jest/TypeScript, Go and shell harnesses.
+- Cross-version regression coverage for workspace cache invalidation and fixture generation.
+
+## v0.7 — optional ecosystem adapters
 - Optional parser-backed external adapters while keeping the core dependency-free.
-- Additional deterministic fixture exporters for popular test frameworks.
+- More framework-specific validator/domain adapters contributed through the stable plugin entry-point surface.
+- Additional fixture exporters where a deterministic mapping is possible without inventing assertions.
 
 ## v1.0
-- Stable report and planning schemas.
+- Stable report, workspace and planning schemas.
 - Stable plugin contract.
 - Versioned adapter capability matrix.
 - Reproducibility suite across operating systems and supported Python versions.
