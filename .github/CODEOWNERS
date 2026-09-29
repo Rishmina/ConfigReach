@@ -1,0 +1,12 @@
+# Default repository ownership
+* @sauravsingla
+
+# Security and supply-chain sensitive paths
+/.github/workflows/ @sauravsingla
+/.github/dependabot.yml @sauravsingla
+/SECURITY.md @sauravsingla
+/action.yml @sauravsingla
+/Dockerfile @sauravsingla
+/pyproject.toml @sauravsingla
+/src/configreach/ @sauravsingla
+/validation/ @sauravsingla
