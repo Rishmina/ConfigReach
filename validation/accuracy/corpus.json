@@ -23,7 +23,23 @@
     "pyproject.toml": "[project]\nname = \"benchmark-app\"\nversion = \"1.0.0\"\n",
     "tests/test_app.py": "def test_live(monkeypatch):\n    monkeypatch.setenv(\"PAYMENT_MODE\", \"live\")\n\ndef test_flag():\n    assert is_enabled(\"new-checkout\") in {True, False}\n\ndef test_region_via_helper():\n    set_config(\"REGION\", \"eu\")\n",
     "tests/web.test.js": "process.env.JS_API_URL = \"http://test.invalid\";\nclient.variation(\"beta-banner\", true);\n",
-    "src/service_test.go": "package service\n\nimport \"testing\"\n\nfunc TestRegion(t *testing.T) {\n    t.Setenv(\"GO_REGION\", \"us\")\n}\n"
+    "src/service_test.go": "package service\n\nimport \"testing\"\n\nfunc TestRegion(t *testing.T) {\n    t.Setenv(\"GO_REGION\", \"us\")\n}\n",
+
+    "src/python_env.py": "import os\n\nDATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')\nPORT = int(os.getenv('PORT', '8000'))\nWORKERS = int(os.getenv('WORKERS', '4'))\nLOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')\n",
+
+    "src/python_branch.py": "import os\n\nAPP_ENV = os.getenv('APP_ENV', 'dev')\n\nif APP_ENV == 'prod':\n    print('production mode')\nelif APP_ENV == 'staging':\n    print('staging mode')\nelse:\n    print('dev mode')\n",
+
+    "src/python_django.py": "import os\n\nDJANGO_DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'\nDJANGO_SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret')\nDJANGO_ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')\n",
+
+    "src/python_feature_flags.py": "import os\n\nENABLE_DASHBOARD = os.getenv('ENABLE_DASHBOARD', 'false').lower() == 'true'\nif ENABLE_DASHBOARD:\n    print('dashboard enabled')\n\ndef is_new_checkout_enabled(client, user):\n    return client.variation('python-new-checkout', False)\n\ndef is_beta_enabled(client, user):\n    return client.variation('python-beta-feature', False)\n",
+
+    "src/python_config_class.py": "import os\n\nclass AppConfig:\n    MAX_CONNECTIONS = int(os.getenv('MAX_CONNECTIONS', '10'))\n    CACHE_TTL = int(os.getenv('CACHE_TTL', '3600'))\n    API_BASE_URL = os.getenv('API_BASE_URL', 'https://api.example.com')\n",
+
+    "src/python_negatives.py": "from scipy import stats\nimport logging\n\nPI = 3.14159265358979\nEULER_NUMBER = 2.71828182845904\nBYTES_PER_KB = 1024\n\nERROR_MESSAGES = {\n    'DATABASE_URL_INVALID': 'Please check your database connection',\n    'API_KEY_MISSING': 'API key is required',\n    'MAX_RETRIES_EXCEEDED': 'Too many retry attempts',\n}\n\nemail_template = 'Dear {{ user.name }}, Environment: {{ deployment.environment }}'\n\ndef calculate_statistical_variation(data):\n    return stats.variation(data)\n\ndef get_user_preferences(user_id):\n    return {'theme': 'dark', 'language': 'en', 'notifications': True}\n\ndef create_user(username, is_active=True, is_admin=False):\n    return {'username': username, 'is_active': is_active}\n\nlogging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')\n",
+
+    "src/python_setup_negative.py": "from setuptools import setup\nsetup(\n    name='mypackage',\n    version='1.0.0',\n    description='My package',\n    author='Rishmina',\n    python_requires='>=3.8',\n)\n",
+
+    "tests/test_python_config.py": "def test_production(monkeypatch):\n    monkeypatch.setenv('APP_ENV', 'prod')\n    monkeypatch.setenv('DATABASE_URL', 'postgresql://prod:secret@db/mydb')\n\ndef test_dashboard_flag(monkeypatch):\n    monkeypatch.setenv('ENABLE_DASHBOARD', 'true')\n\ndef test_django_debug(monkeypatch):\n    monkeypatch.setenv('DJANGO_DEBUG', 'True')\n    monkeypatch.setenv('DJANGO_SECRET_KEY', 'test-secret')\n\ndef test_python_feature_flags(client):\n    client.variation('python-new-checkout', True)\n    client.variation('python-beta-feature', False)\n"
   },
   "labels": {
     "env_var_discovery": [
@@ -37,9 +53,26 @@
       "JS_DESTRUCTURED",
       "NODE_MODE",
       "PAYMENT_MODE",
-      "REGION"
+      "REGION",
+      "DATABASE_URL",
+      "PORT",
+      "WORKERS",
+      "LOG_LEVEL",
+      "APP_ENV",
+      "DJANGO_DEBUG",
+      "DJANGO_SECRET_KEY",
+      "DJANGO_ALLOWED_HOSTS",
+      "ENABLE_DASHBOARD",
+      "MAX_CONNECTIONS",
+      "CACHE_TTL",
+      "API_BASE_URL"
     ],
-    "feature_flags": ["beta-banner", "new-checkout"],
+    "feature_flags": [
+      "beta-banner",
+      "new-checkout",
+      "python-new-checkout",
+      "python-beta-feature"
+    ],
     "config_declarations": [
       "API_TOKEN",
       "API_URL",
@@ -51,9 +84,34 @@
       "mode",
       "region",
       "service.mode",
-      "service.timeout"
+      "service.timeout",
+      "DATABASE_URL",
+      "PORT",
+      "WORKERS",
+      "LOG_LEVEL",
+      "DJANGO_DEBUG",
+      "DJANGO_SECRET_KEY",
+      "DJANGO_ALLOWED_HOSTS",
+      "ENABLE_DASHBOARD",
+      "MAX_CONNECTIONS",
+      "CACHE_TTL",
+      "API_BASE_URL"
     ],
-    "test_evidence": ["GO_REGION", "JS_API_URL", "PAYMENT_MODE", "REGION", "beta-banner", "new-checkout"],
+    "test_evidence": [
+      "GO_REGION",
+      "JS_API_URL",
+      "PAYMENT_MODE",
+      "REGION",
+      "beta-banner",
+      "new-checkout",
+      "APP_ENV",
+      "DATABASE_URL",
+      "ENABLE_DASHBOARD",
+      "DJANGO_DEBUG",
+      "DJANGO_SECRET_KEY",
+      "python-new-checkout",
+      "python-beta-feature"
+    ],
     "branch_inference": [
       "GO_MODE::prod",
       "NODE_MODE::prod",
@@ -61,7 +119,14 @@
       "beta-banner::false",
       "beta-banner::true",
       "new-checkout::false",
-      "new-checkout::true"
+      "new-checkout::true",
+      "APP_ENV::prod",
+      "APP_ENV::staging",
+      "ENABLE_DASHBOARD::true",
+      "python-new-checkout::false",
+      "python-new-checkout::true",
+      "python-beta-feature::false",
+      "python-beta-feature::true"
     ]
   },
   "designed_challenges": [
@@ -71,6 +136,18 @@
     "Unrelated methods named variation that should not be feature flags",
     "package.json and pyproject.toml project metadata that should not be runtime configuration declarations",
     "Test evidence hidden behind a small helper function",
-    "Boolean settings domains that should not be counted as decision branches without a branch"
+    "Boolean settings domains that should not be counted as decision branches without a branch",
+    "Python env var with int() type cast that should still be discovered as env_var_discovery",
+    "Django settings pattern reading from os.environ.get with string equality comparison",
+    "Feature flag via env var boolean coercion (os.getenv == 'true') that creates a branch",
+    "Config class with multiple fields all sourced from environment variables",
+    "scipy.stats.variation statistical call that should not be a feature flag",
+    "Error message dictionary with uppercase keys that resemble env var names but are never read as env vars",
+    "Jinja2 template variable deployment.environment that is not a configuration read",
+    "Mathematical constants PI and EULER_NUMBER that should not be config declarations",
+    "Function parameter boolean defaults that should not be branch_inference without a real branch",
+    "setup() metadata name/version/author that should not be config_declarations",
+    "logging.basicConfig with hardcoded level that should not be env_var_discovery",
+    "Per-user preference dictionary that should not be global config_declarations"
   ]
 }
