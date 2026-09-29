@@ -12,6 +12,12 @@ from .engine import scan
 from .fixture_exporters import FIXTURE_FORMATS, render_fixture
 from .planner import build_plan, render_plan
 from .plugins import adapter_inventory
+from .release import (
+    build_release_manifest,
+    compare_release_manifests,
+    render_release_comparison,
+    render_release_manifest,
+)
 from .reproducibility import render_repro, verify_reproducibility
 from .schemas import SCHEMAS, schema_registry_document, validate_document
 from .workspace import render_workspace, scan_workspaces
@@ -182,6 +188,36 @@ def _schema_main(argv: list[str]) -> int:
     return 0
 
 
+def _release_main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="configreach release",
+        description="Inspect or compare deterministic wheel/sdist release artifacts",
+    )
+    parser.add_argument("directory", help="directory containing wheel/sdist artifacts")
+    parser.add_argument("--compare", help="second artifact directory for reproducibility comparison")
+    parser.add_argument("--format", choices=["text", "json"], default="text")
+    parser.add_argument("--output")
+    parser.add_argument(
+        "--allow-byte-differences",
+        action="store_true",
+        help="accept container-byte differences when canonical archive contents are identical",
+    )
+    args = parser.parse_args(argv)
+    try:
+        left = build_release_manifest(args.directory)
+        if args.compare:
+            right = build_release_manifest(args.compare)
+            comparison = compare_release_manifests(left, right)
+            cli._emit(render_release_comparison(comparison, args.format), args.output)
+            passed = comparison.content_reproducible if args.allow_byte_differences else comparison.exact_reproducible
+            return 0 if passed else 1
+        cli._emit(render_release_manifest(left, args.format), args.output)
+        return 0
+    except (OSError, ValueError) as exc:
+        sys.stderr.write(f"ConfigReach: {exc}\n")
+        return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if args and args[0] == "plan":
@@ -194,6 +230,8 @@ def main(argv: list[str] | None = None) -> int:
         return _reproduce_main(args[1:])
     if args and args[0] == "schema":
         return _schema_main(args[1:])
+    if args and args[0] == "release":
+        return _release_main(args[1:])
 
     # Keep the stable CLI implementation while routing scans/diffs through the
     # versioned semantic engine. This avoids duplicating command parsing/policy.
