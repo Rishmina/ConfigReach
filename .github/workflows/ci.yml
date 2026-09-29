@@ -21,13 +21,21 @@ jobs:
       - run: python -m compileall -q src tests
       - run: python -m py_compile examples/plugins/tree_sitter_js/configreach_tree_sitter_js.py
       - run: pytest
-      - run: configreach scan examples/basic --format json --no-cache
+      - run: configreach scan examples/basic --format json --output /tmp/configreach-report.json --no-cache
       - run: configreach scan examples/polyglot --format sarif --output /tmp/configreach.sarif --no-cache
       - run: configreach scan examples/polyglot --format html --output /tmp/configreach.html --no-cache
       - run: configreach scan examples/frameworks --format json --output /tmp/configreach-frameworks.json --no-cache
       - run: configreach plan examples/combinations --format json --output /tmp/configreach-plan.json --no-cache
       - run: configreach plan examples/combinations --fixture pytest --output /tmp/configreach-fixtures.py --no-cache
+      - run: configreach plan examples/combinations --fixture junit --output /tmp/ConfigReachCases.java --no-cache
+      - run: configreach plan examples/combinations --fixture xunit --output /tmp/ConfigReachCases.cs --no-cache
       - run: configreach workspace . --format json --output /tmp/configreach-workspaces.json --no-cache
       - run: configreach adapters --format json --output /tmp/configreach-adapters.json
       - run: configreach reproduce examples/combinations --runs 3 --format json --output /tmp/configreach-repro.json
+      - run: configreach schema --format json --output /tmp/configreach-schemas.json
+      - run: configreach schema --kind report --check /tmp/configreach-report.json
+      - run: configreach schema --kind plan --check /tmp/configreach-plan.json
+      - run: configreach schema --kind workspace --check /tmp/configreach-workspaces.json
+      - run: configreach schema --kind capabilities --check /tmp/configreach-adapters.json
+      - run: configreach schema --kind reproducibility --check /tmp/configreach-repro.json
       - run: configreach doctor examples/polyglot
