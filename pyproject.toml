@@ -10,7 +10,22 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "Saurav Singla"}]
-keywords = ["configuration", "coverage", "testing", "ci", "devtools", "feature-flags", "environment-variables"]
+keywords = [
+  "configuration testing",
+  "config coverage",
+  "configuration coverage",
+  "environment variable test coverage",
+  "feature flag test coverage",
+  "test environment variables",
+  "kubernetes configuration testing",
+  "static analysis",
+  "github actions",
+  "testing",
+  "ci",
+  "devtools",
+  "feature flags",
+  "environment variables",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -22,6 +37,11 @@ classifiers = [
   "Topic :: Software Development :: Testing",
 ]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/sauravsingla/ConfigReach"
+Repository = "https://github.com/sauravsingla/ConfigReach"
+Issues = "https://github.com/sauravsingla/ConfigReach/issues"
 
 [project.optional-dependencies]
 dev = [
