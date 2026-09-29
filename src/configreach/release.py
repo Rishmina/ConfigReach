@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import gzip
 import hashlib
+import io
 import json
 import tarfile
 import zipfile
@@ -63,6 +65,69 @@ def canonical_archive_digest(path: str | Path) -> str:
         return digest.hexdigest()
 
     raise ValueError(f"unsupported release artifact: {artifact.name}")
+
+
+def normalize_sdist(path: str | Path, epoch: int) -> None:
+    """Rewrite an sdist using deterministic tar/gzip container metadata.
+
+    The source distribution payload is preserved, but archive-only metadata is rebuilt
+    from scratch: sorted member order, fixed timestamps, normalized ownership and stable
+    modes. This avoids inheriting host/wall-clock metadata from setuptools TarInfo objects.
+    """
+    artifact = Path(path)
+    if not artifact.name.endswith(".tar.gz"):
+        raise ValueError(f"not an sdist: {artifact.name}")
+    if epoch < 0:
+        raise ValueError("epoch must be non-negative")
+
+    entries: list[tuple[tarfile.TarInfo, bytes | None]] = []
+    with tarfile.open(artifact, "r:gz") as source:
+        for member in sorted(source.getmembers(), key=lambda item: item.name):
+            data: bytes | None = None
+            if member.isfile():
+                handle = source.extractfile(member)
+                if handle is None:
+                    raise ValueError(f"could not read sdist member: {member.name}")
+                data = handle.read()
+
+            info = tarfile.TarInfo(member.name)
+            info.type = member.type
+            info.linkname = member.linkname
+            info.mtime = epoch
+            info.uid = 0
+            info.gid = 0
+            info.uname = ""
+            info.gname = ""
+            info.devmajor = 0
+            info.devminor = 0
+            info.pax_headers = {}
+            if member.isdir():
+                info.mode = 0o755
+                info.size = 0
+            elif member.isfile():
+                info.mode = 0o755 if member.mode & 0o111 else 0o644
+                info.size = len(data or b"")
+            elif member.issym() or member.islnk():
+                info.mode = 0o777
+                info.size = 0
+            else:
+                info.mode = 0o644
+                info.size = 0
+            entries.append((info, data))
+
+    temporary = artifact.with_name(artifact.name + ".normalized")
+    with temporary.open("wb") as raw:
+        with gzip.GzipFile(
+            filename="",
+            mode="wb",
+            fileobj=raw,
+            compresslevel=9,
+            mtime=epoch,
+        ) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w|", format=tarfile.PAX_FORMAT) as target:
+                for info, data in entries:
+                    target.addfile(info, io.BytesIO(data) if data is not None else None)
+    temporary.replace(artifact)
 
 
 @dataclass(frozen=True)
