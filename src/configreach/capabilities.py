@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
-CAPABILITY_SCHEMA_VERSION = 1
+from .schemas import CAPABILITY_SCHEMA_VERSION
 
 
 @dataclass(frozen=True)
