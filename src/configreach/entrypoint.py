@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import cli
 from .capabilities import builtin_capability_document
@@ -12,6 +13,7 @@ from .fixture_exporters import FIXTURE_FORMATS, render_fixture
 from .planner import build_plan, render_plan
 from .plugins import adapter_inventory
 from .reproducibility import render_repro, verify_reproducibility
+from .schemas import SCHEMAS, schema_registry_document, validate_document
 from .workspace import render_workspace, scan_workspaces
 
 
@@ -129,6 +131,57 @@ def _reproduce_main(argv: list[str]) -> int:
         return 2
 
 
+def _schema_main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="configreach schema",
+        description="Inspect and validate ConfigReach machine-readable schema compatibility",
+    )
+    parser.add_argument("--kind", choices=sorted(SCHEMAS), help="artifact kind when validating a file")
+    parser.add_argument("--check", help="JSON artifact to validate")
+    parser.add_argument("--format", choices=["text", "json"], default="text")
+    parser.add_argument("--output")
+    args = parser.parse_args(argv)
+
+    if args.check:
+        if not args.kind:
+            sys.stderr.write("ConfigReach: --kind is required with --check\n")
+            return 2
+        try:
+            data = json.loads(Path(args.check).read_text(encoding="utf-8"))
+            result = validate_document(args.kind, data)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            sys.stderr.write(f"ConfigReach: {exc}\n")
+            return 2
+        payload = result.to_dict()
+        if args.format == "json":
+            text = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        else:
+            lines = [
+                f"ConfigReach schema check: {'PASS' if result.compatible else 'FAIL'}",
+                f"kind: {result.kind}",
+                f"document version: {result.schema_version}",
+                f"supported: {result.min_supported_version}..{result.current_version}",
+                f"status: {result.status}",
+            ]
+            lines.extend(f"warning: {item}" for item in result.warnings)
+            lines.extend(f"error: {item}" for item in result.errors)
+            text = "\n".join(lines) + "\n"
+        cli._emit(text, args.output)
+        return 0 if result.compatible else 1
+
+    data = schema_registry_document()
+    if args.format == "json":
+        cli._emit(json.dumps(data, indent=2, sort_keys=True) + "\n", args.output)
+        return 0
+    lines = ["ConfigReach schema registry"]
+    for name, spec in sorted(SCHEMAS.items()):
+        lines.append(
+            f"- {name}: current={spec.current_version} supported={spec.min_supported_version}..{spec.current_version}"
+        )
+    cli._emit("\n".join(lines) + "\n", args.output)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if args and args[0] == "plan":
@@ -139,6 +192,8 @@ def main(argv: list[str] | None = None) -> int:
         return _adapters_main(args[1:])
     if args and args[0] == "reproduce":
         return _reproduce_main(args[1:])
+    if args and args[0] == "schema":
+        return _schema_main(args[1:])
 
     # Keep the stable CLI implementation while routing scans/diffs through the
     # versioned semantic engine. This avoids duplicating command parsing/policy.
