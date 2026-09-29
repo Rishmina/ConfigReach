@@ -17,6 +17,12 @@ from .semantic_adapters import (
     record_json_schema,
     record_terraform_domains,
 )
+from .validator_adapters import (
+    record_extended_json_schema,
+    record_java_bean_validation,
+    record_terraform_validators,
+    record_zod,
+)
 
 SEMANTIC_EXTENSIONS = {
     ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".java", ".kt", ".cs", ".json", ".tf",
@@ -24,7 +30,7 @@ SEMANTIC_EXTENSIONS = {
 
 
 class SemanticScanReport(ScanReport):
-    """ScanReport with v0.4 dependency scoping and line-range attribution."""
+    """ScanReport with scoped deterministic semantics and line-range attribution."""
 
     @staticmethod
     def _dependency_scope(loc: Location) -> str:
@@ -48,8 +54,8 @@ class SemanticScanReport(ScanReport):
 
     def to_dict(self):
         data = super().to_dict()
-        data["schema_version"] = 4
-        data["summary"]["semantic_engine"] = "v0.4"
+        data["schema_version"] = 5
+        data["summary"]["semantic_engine"] = "v0.6"
         return data
 
 
@@ -129,11 +135,13 @@ def scan(root: str | Path = ".", settings: Settings | None = None, *, use_cache:
         if suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"}:
             _drop_generic_language_locations(report, rel, "javascript")
             record_javascript_typescript(text, rel, is_test, report.keys)
+            record_zod(text, rel, report.keys)
         elif suffix == ".go":
             _drop_generic_language_locations(report, rel, "go")
             record_go(text, rel, is_test, report.keys)
         elif suffix in {".java", ".kt"}:
             record_java_frameworks(text, rel, is_test, report.keys)
+            record_java_bean_validation(text, rel, report.keys)
         elif suffix == ".cs":
             record_dotnet(text, rel, is_test, report.keys)
             if rel not in base_paths:
@@ -147,10 +155,12 @@ def scan(root: str | Path = ".", settings: Settings | None = None, *, use_cache:
             if isinstance(data, dict) and isinstance(data.get("properties"), dict):
                 _drop_schema_flattening(report, rel)
                 record_json_schema(data, rel, report.keys)
+                record_extended_json_schema(data, rel, report.keys)
         elif suffix == ".tf":
             record_terraform_domains(text, rel, report.keys)
+            record_terraform_validators(text, rel, report.keys)
 
-    # Re-apply boolean inference after semantic adapters add finite domains/flags.
+    # Re-apply boolean inference after semantic/validator adapters add finite domains/flags.
     for item in report.keys.values():
         lower = {x.lower() for x in item.expected_values | item.defaults}
         if lower & {"true", "false"} or "feature-flag" in item.categories:
