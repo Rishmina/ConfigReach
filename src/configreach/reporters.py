@@ -81,7 +81,8 @@ def markdown_report(report: ScanReport) -> str:
     if report.findings:
         lines += ["", "## Findings", "", "| Rule | Severity | Finding |", "|---|---|---|"]
         for finding in report.findings:
-            lines.append(f"| `{finding.rule_id}` | {finding.severity} | {finding.message.replace('|', '\\|')} |")
+            message = finding.message.replace("|", "\\|")
+            lines.append(f"| `{finding.rule_id}` | {finding.severity} | {message} |")
     return "\n".join(lines) + "\n"
 
 
