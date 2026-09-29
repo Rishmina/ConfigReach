@@ -7,6 +7,7 @@
 [![CI](https://github.com/sauravsingla/ConfigReach/actions/workflows/ci.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/codeql.yml)
 [![Reproducibility](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/reproducibility.yml)
+[![Performance](https://github.com/sauravsingla/ConfigReach/actions/workflows/performance.yml/badge.svg)](https://github.com/sauravsingla/ConfigReach/actions/workflows/performance.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](pyproject.toml)
@@ -50,6 +51,7 @@ configreach plan examples/combinations --fixture pytest --output configreach_cas
 configreach workspace . --format json --output configreach-workspaces.json
 configreach adapters --format json
 configreach reproduce examples/combinations --runs 3
+configreach schema --format json
 ```
 
 ## Observable metrics — no opaque AI score
@@ -102,10 +104,12 @@ configreach explain KEY [PATH]
 configreach matrix [PATH]
 configreach plan [PATH]
 configreach plan [PATH] --strength 3 --max-cases 40
-configreach plan [PATH] --fixture pytest|jest|go|shell
+configreach plan [PATH] --fixture pytest|jest|go|shell|junit|xunit
 configreach workspace [PATH]
 configreach adapters
 configreach reproduce [PATH] --runs 3
+configreach schema
+configreach schema --kind report --check configreach.json
 configreach diff origin/main...HEAD [PATH]
 configreach pr-comment origin/main...HEAD [PATH]
 configreach doctor [PATH]
@@ -138,6 +142,8 @@ configreach plan . --fixture pytest --output test_configreach_cases.py
 configreach plan . --fixture jest --output configreach.cases.ts
 configreach plan . --fixture go --output configreach_cases_test.go
 configreach plan . --fixture shell --output configreach_cases.sh
+configreach plan . --fixture junit --output ConfigReachCases.java
+configreach plan . --fixture xunit --output ConfigReachCases.cs
 ```
 
 Exporters provide configuration cases only; they deliberately do not invent expected business outcomes. See [docs/fixtures.md](docs/fixtures.md).
@@ -173,6 +179,18 @@ configreach reproduce . --runs 5 --format json --output repro.json
 ```
 
 Repeated scans are uncached and converted to canonical JSON before SHA-256 hashing. Absolute root, timing and cache metadata are excluded because they are execution-environment metadata, not analysis semantics. The repository's reproducibility workflow compares canonical digests produced on **Ubuntu, macOS and Windows** and fails if they differ. See [docs/reproducibility.md](docs/reproducibility.md).
+
+## Schema compatibility
+
+ConfigReach publishes explicit versions for scan reports, workspace reports, deterministic plans, reproducibility results and adapter capability inventories.
+
+```bash
+configreach schema
+configreach schema --format json
+configreach schema --kind report --check configreach.json
+```
+
+The validator rejects unsupported future schemas instead of guessing their meaning. Report schemas 3-5 are accepted for structural compatibility checks, while new scan output remains report schema v5. Golden compatibility fixtures live in the test suite. See [docs/schema-compatibility.md](docs/schema-compatibility.md).
 
 ## CI gating
 
@@ -262,17 +280,20 @@ jobs:
 
 Markdown output can be appended to the job summary, SARIF can be uploaded to Code Scanning, and the repository includes an optional PR-comment workflow.
 
-## Benchmark and testing
+## Benchmark, performance budget and testing
 
 ```bash
 python benchmarks/bench_scan.py 1000
+python benchmarks/perf_budget.py --files 800 --min-files-per-second 150
 python -m pip install -e ".[dev]"
 pytest
 python -m compileall -q src tests
 configreach reproduce examples/combinations --runs 3
 ```
 
-The suite covers language/config discovery, deployment sources, validators, Pydantic/feature flags, branch provenance, combination metrics, real Git PR comparison, baselines, cache behavior, workspace-local invalidation, planners, fixture exporters, plugin compatibility, reproducibility, HTML/SARIF/JSON/Markdown reporters and CLI policies.
+The dedicated performance workflow runs the full semantic engine over a synthetic Python/TypeScript/Go/Java/.NET repository and uses a deliberately conservative throughput floor to catch order-of-magnitude regressions without turning runner noise into flaky CI.
+
+The suite covers language/config discovery, deployment sources, validators, Pydantic/feature flags, branch provenance, combination metrics, real Git PR comparison, baselines, cache behavior, workspace-local invalidation, planners, fixture exporters, plugin compatibility, schema compatibility, reproducibility, performance gating, HTML/SARIF/JSON/Markdown reporters and CLI policies.
 
 ## Design principles
 
@@ -283,4 +304,4 @@ The suite covers language/config discovery, deployment sources, validators, Pyda
 - Unknown semantics stay unknown rather than being guessed.
 - Machine output is designed for deterministic CI use.
 
-See [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/roadmap.md](docs/roadmap.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+See [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/schema-compatibility.md](docs/schema-compatibility.md), [docs/roadmap.md](docs/roadmap.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
