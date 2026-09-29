@@ -9,7 +9,7 @@ fullWidth: true
 header: mini
 pinned: false
 license: mit
-short_description: Codecov for configuration space — deterministic configuration coverage for software repositories.
+short_description: Deterministic configuration coverage for software repos.
 tags:
   - developer-tools
   - testing
