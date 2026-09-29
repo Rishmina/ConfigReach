@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "root": ".",
+  "summary": {
+    "workspaces": 1,
+    "cache_hits": 0,
+    "files_scanned": 2,
+    "tests_scanned": 1,
+    "configuration_inputs": 1,
+    "covered_inputs": 1,
+    "coverage": 1.0
+  },
+  "workspaces": [
+    {
+      "path": ".",
+      "files_scanned": 2,
+      "tests_scanned": 1,
+      "configuration_inputs": 1,
+      "covered_inputs": 1,
+      "coverage": 1.0,
+      "cache_hit": false,
+      "findings": 0
+    }
+  ]
+}
