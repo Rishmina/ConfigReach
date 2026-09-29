@@ -57,14 +57,22 @@
 - Cross-platform reproducibility workflow comparing Ubuntu, macOS and Windows canonical digests.
 - Versioned built-in adapter capability schema.
 
-## v0.8 — stabilization
-- Broader third-party adapter examples and compatibility fixtures.
-- Additional deterministic fixture exporters where assertion-free mappings are useful.
-- Report/workspace/planning schema compatibility fixtures and migration notes.
-- Performance budgets for large polyglot monorepos.
+## v0.8 — stabilization and compatibility ✅
+- Central machine-readable schema registry for reports, workspaces, plans, reproducibility output and adapter capabilities.
+- `configreach schema` compatibility diagnostics plus validation of saved JSON artifacts.
+- Golden schema fixtures, including supported legacy report v3, to catch accidental contract breaks in CI.
+- Deterministic JUnit 5 and .NET/xUnit fixture exporters without synthesized assertions.
+- Full-engine synthetic polyglot performance budget with a dedicated GitHub-hosted CPU workflow.
+- Explicit migration/compatibility guidance for downstream consumers.
+
+## v0.9 — release hardening
+- Packaging/release reproducibility checks for wheel and source distributions.
+- More optional third-party adapter examples using Adapter API v1.
+- Additional compatibility fixtures from real-world polyglot repositories.
+- Performance history artifacts for large monorepo scenarios.
 
 ## v1.0
 - Stable report, workspace and planning schemas.
 - Stable plugin contract based on adapter API v1 feedback.
 - Versioned adapter capability matrix with compatibility policy.
-- Reproducibility suite across operating systems and supported Python versions as a release gate.
+- Reproducibility and performance suites as release gates across supported Python versions and operating systems.
