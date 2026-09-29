@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "builtins": [
+    {
+      "adapter_id": "python-ast",
+      "ecosystem": "Python",
+      "mode": "ast",
+      "sources": ["os.getenv"],
+      "function_scope": true,
+      "finite_domains": true,
+      "validators": true,
+      "test_values": true,
+      "notes": "fixture"
+    }
+  ]
+}
