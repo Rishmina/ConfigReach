@@ -1,0 +1,161 @@
+{
+  "aggregate": {
+    "false_negatives": 4,
+    "false_positives": 13,
+    "macro_f1": 0.795601,
+    "micro_f1": 0.795181,
+    "micro_precision": 0.717391,
+    "micro_recall": 0.891892,
+    "true_positives": 33
+  },
+  "corpus": "ConfigReach hand-labelled accuracy corpus v1",
+  "designed_challenges": [
+    "Python environment key built from string concatenation",
+    "JavaScript process.env destructuring",
+    "Go os.Getenv using a variable key",
+    "Unrelated methods named variation that should not be feature flags",
+    "package.json and pyproject.toml project metadata that should not be runtime configuration declarations",
+    "Test evidence hidden behind a small helper function",
+    "Boolean settings domains that should not be counted as decision branches without a branch"
+  ],
+  "label_policy": {
+    "branch_inference": "Explicit configuration-dependent decision states. A finite boolean type without an actual decision branch does not itself count as a branch.",
+    "config_declarations": "Declarations of application/runtime/deployment configuration. Package/project metadata such as package.json name/version/scripts and pyproject project metadata do not count.",
+    "env_var_discovery": "Runtime environment-variable inputs that a human reviewer can identify from source, including statically recoverable intent expressed through simple indirection; declarations alone do not count.",
+    "feature_flags": "Runtime boolean/variant flag lookups whose call is semantically a feature-flag decision; unrelated methods named variation do not count.",
+    "test_evidence": "Configuration keys for which a human reviewer can see a test intentionally supplies or exercises the key, including a small helper abstraction."
+  },
+  "metrics": {
+    "branch_inference": {
+      "expected": 7,
+      "f1": 0.7,
+      "false_negatives": 0,
+      "false_positives": 6,
+      "fn_items": [],
+      "fp_items": [
+        "DEBUG::false",
+        "DEBUG::true",
+        "coefficient-of-variation::false",
+        "coefficient-of-variation::true",
+        "stddev::false",
+        "stddev::true"
+      ],
+      "precision": 0.538462,
+      "predicted": 13,
+      "recall": 1.0,
+      "tp_items": [
+        "GO_MODE::prod",
+        "NODE_MODE::prod",
+        "PAYMENT_MODE::live",
+        "beta-banner::false",
+        "beta-banner::true",
+        "new-checkout::false",
+        "new-checkout::true"
+      ],
+      "true_positives": 7
+    },
+    "config_declarations": {
+      "expected": 11,
+      "f1": 0.769231,
+      "false_negatives": 1,
+      "false_positives": 5,
+      "fn_items": [
+        "service.mode"
+      ],
+      "fp_items": [
+        "name",
+        "project.name",
+        "project.version",
+        "scripts.test",
+        "version"
+      ],
+      "precision": 0.666667,
+      "predicted": 15,
+      "recall": 0.909091,
+      "tp_items": [
+        "API_TOKEN",
+        "API_URL",
+        "APP_ENV",
+        "BUILD_MODE",
+        "DEBUG",
+        "ENV_TEMPLATE",
+        "logging.level",
+        "mode",
+        "region",
+        "service.timeout"
+      ],
+      "true_positives": 10
+    },
+    "env_var_discovery": {
+      "expected": 11,
+      "f1": 0.842105,
+      "false_negatives": 3,
+      "false_positives": 0,
+      "fn_items": [
+        "DYNAMIC_TOKEN",
+        "GO_DYNAMIC",
+        "JS_DESTRUCTURED"
+      ],
+      "fp_items": [],
+      "precision": 1.0,
+      "predicted": 8,
+      "recall": 0.727273,
+      "tp_items": [
+        "DOTNET_REGION",
+        "GO_MODE",
+        "GO_REGION",
+        "JAVA_REGION",
+        "JS_API_URL",
+        "NODE_MODE",
+        "PAYMENT_MODE",
+        "REGION"
+      ],
+      "true_positives": 8
+    },
+    "feature_flags": {
+      "expected": 2,
+      "f1": 0.666667,
+      "false_negatives": 0,
+      "false_positives": 2,
+      "fn_items": [],
+      "fp_items": [
+        "coefficient-of-variation",
+        "stddev"
+      ],
+      "precision": 0.5,
+      "predicted": 4,
+      "recall": 1.0,
+      "tp_items": [
+        "beta-banner",
+        "new-checkout"
+      ],
+      "true_positives": 2
+    },
+    "test_evidence": {
+      "expected": 6,
+      "f1": 1.0,
+      "false_negatives": 0,
+      "false_positives": 0,
+      "fn_items": [],
+      "fp_items": [],
+      "precision": 1.0,
+      "predicted": 6,
+      "recall": 1.0,
+      "tp_items": [
+        "GO_REGION",
+        "JS_API_URL",
+        "PAYMENT_MODE",
+        "REGION",
+        "beta-banner",
+        "new-checkout"
+      ],
+      "true_positives": 6
+    }
+  },
+  "scan_summary": {
+    "configuration_inputs": 29,
+    "files_scanned": 15,
+    "tests_scanned": 3
+  },
+  "schema_version": 1
+}

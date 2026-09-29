@@ -1,0 +1,401 @@
+{
+  "environment": {
+    "machine": "x86_64",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python": "3.12.14"
+  },
+  "failures": [],
+  "methodology": {
+    "dependencies_installed": false,
+    "manual_review_is_exhaustive": false,
+    "pinned_commits": true,
+    "static_only": true,
+    "target_code_executed": false
+  },
+  "projects": [
+    {
+      "category_counts": {
+        "cli": 11,
+        "config-class": 9,
+        "deployment": 2,
+        "env": 26,
+        "make": 4,
+        "settings": 119
+      },
+      "clone_seconds": 0.824431,
+      "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+      "configuration_coverage": 0.149068,
+      "configuration_inputs": 161,
+      "covered_inputs": 24,
+      "ecosystem": "Python",
+      "engine_runtime_seconds": 0.850563,
+      "files_scanned": 101,
+      "finding_counts": {
+        "CR001": 137,
+        "CR002": 8,
+        "CR003": 139,
+        "CR004": 24,
+        "CR005": 2
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "pallets/flask",
+      "runtime_seconds": 0.850569,
+      "tests_scanned": 51,
+      "uncovered_inputs": 137,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "cli": 118,
+        "config-class": 58,
+        "deployment": 21,
+        "env": 77,
+        "make": 10,
+        "secret": 2,
+        "settings": 192
+      },
+      "clone_seconds": 2.98063,
+      "commit": "9332b163a67eabe5bdbf8066b1c5da394be9aa9c",
+      "configuration_coverage": 0.343434,
+      "configuration_inputs": 396,
+      "covered_inputs": 136,
+      "ecosystem": "Python",
+      "engine_runtime_seconds": 75.942365,
+      "files_scanned": 3132,
+      "finding_counts": {
+        "CR001": 260,
+        "CR002": 47,
+        "CR003": 284,
+        "CR004": 90,
+        "CR005": 3,
+        "CR006": 4,
+        "CR009": 6
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "django/django",
+      "runtime_seconds": 75.942376,
+      "tests_scanned": 2098,
+      "uncovered_inputs": 260,
+      "warnings": [
+        "Python parse failed: tests/test_runner_apps/tagged/tests_syntax_error.py"
+      ]
+    },
+    {
+      "category_counts": {
+        "actions-var": 1,
+        "cli": 2,
+        "config-class": 102,
+        "deployment": 69,
+        "env": 30,
+        "make": 1,
+        "pydantic": 6,
+        "secret": 9,
+        "settings": 724
+      },
+      "clone_seconds": 1.257399,
+      "commit": "bb6da4cfbb1f559885ea2fa207ec93853bfeac64",
+      "configuration_coverage": 0.037944,
+      "configuration_inputs": 817,
+      "covered_inputs": 31,
+      "ecosystem": "Python",
+      "engine_runtime_seconds": 55.008187,
+      "files_scanned": 664,
+      "finding_counts": {
+        "CR001": 786,
+        "CR002": 16,
+        "CR003": 786,
+        "CR004": 116,
+        "CR005": 21,
+        "CR006": 4
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "pydantic/pydantic",
+      "runtime_seconds": 55.008195,
+      "tests_scanned": 354,
+      "uncovered_inputs": 786,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "cli": 17,
+        "deployment": 2,
+        "env": 3,
+        "secret": 1,
+        "settings": 38
+      },
+      "clone_seconds": 0.988784,
+      "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "configuration_coverage": 0.081967,
+      "configuration_inputs": 61,
+      "covered_inputs": 5,
+      "ecosystem": "Python",
+      "engine_runtime_seconds": 0.759716,
+      "files_scanned": 68,
+      "finding_counts": {
+        "CR001": 56,
+        "CR002": 2,
+        "CR003": 58,
+        "CR004": 7,
+        "CR005": 1,
+        "CR009": 5
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "encode/httpx",
+      "runtime_seconds": 0.759822,
+      "tests_scanned": 38,
+      "uncovered_inputs": 56,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 1,
+        "env": 4,
+        "secret": 1,
+        "settings": 63
+      },
+      "clone_seconds": 0.685205,
+      "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+      "configuration_coverage": 0.058824,
+      "configuration_inputs": 68,
+      "covered_inputs": 4,
+      "ecosystem": "JavaScript",
+      "engine_runtime_seconds": 0.821291,
+      "files_scanned": 149,
+      "finding_counts": {
+        "CR001": 64,
+        "CR002": 2,
+        "CR003": 64,
+        "CR005": 1
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "expressjs/express",
+      "runtime_seconds": 0.821299,
+      "tests_scanned": 91,
+      "uncovered_inputs": 64,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 5,
+        "env": 22,
+        "secret": 1,
+        "settings": 7454
+      },
+      "clone_seconds": 1.153863,
+      "commit": "2426e03ba9020be31ed013873423cea6b7cd2e67",
+      "configuration_coverage": 0.003745,
+      "configuration_inputs": 7477,
+      "covered_inputs": 28,
+      "ecosystem": "JavaScript",
+      "engine_runtime_seconds": 148.796696,
+      "files_scanned": 291,
+      "finding_counts": {
+        "CR001": 7449,
+        "CR002": 9,
+        "CR003": 7455,
+        "CR004": 907,
+        "CR005": 28,
+        "CR006": 6
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "axios/axios",
+      "runtime_seconds": 148.796704,
+      "tests_scanned": 179,
+      "uncovered_inputs": 7449,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 5,
+        "env": 5,
+        "make": 7,
+        "secret": 1
+      },
+      "clone_seconds": 0.699013,
+      "commit": "1bd0ecf2d3e08da37efa270bb7be20c1eddb0d68",
+      "configuration_coverage": 0.125,
+      "configuration_inputs": 16,
+      "covered_inputs": 2,
+      "ecosystem": "Go",
+      "engine_runtime_seconds": 0.419546,
+      "files_scanned": 111,
+      "finding_counts": {
+        "CR001": 14,
+        "CR002": 4,
+        "CR003": 11,
+        "CR004": 1,
+        "CR005": 1
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "gin-gonic/gin",
+      "runtime_seconds": 0.41955,
+      "tests_scanned": 40,
+      "uncovered_inputs": 14,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 14,
+        "env": 73,
+        "helm": 350,
+        "make": 26,
+        "schema": 9,
+        "secret": 4,
+        "settings": 24
+      },
+      "clone_seconds": 1.096854,
+      "commit": "8107b7604268a1753776c111457255cface0db83",
+      "configuration_coverage": 0.222689,
+      "configuration_inputs": 476,
+      "covered_inputs": 106,
+      "ecosystem": "Go",
+      "engine_runtime_seconds": 13.805704,
+      "files_scanned": 1315,
+      "finding_counts": {
+        "CR001": 370,
+        "CR002": 60,
+        "CR003": 400,
+        "CR004": 44,
+        "CR005": 1,
+        "CR006": 12
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "helm/helm",
+      "runtime_seconds": 13.805719,
+      "tests_scanned": 247,
+      "uncovered_inputs": 370,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 11,
+        "docker": 4,
+        "env": 4,
+        "settings": 84,
+        "spring": 1
+      },
+      "clone_seconds": 0.770944,
+      "commit": "f3c74834e31079f69855e9c9eddb34fceb40a8d9",
+      "configuration_coverage": 0.3,
+      "configuration_inputs": 100,
+      "covered_inputs": 30,
+      "ecosystem": "Java/Spring",
+      "engine_runtime_seconds": 0.221349,
+      "files_scanned": 76,
+      "finding_counts": {
+        "CR001": 70,
+        "CR003": 96,
+        "CR004": 2,
+        "CR005": 4
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "spring-projects/spring-petclinic",
+      "runtime_seconds": 0.221356,
+      "tests_scanned": 20,
+      "uncovered_inputs": 70,
+      "warnings": []
+    },
+    {
+      "category_counts": {
+        "deployment": 21,
+        "docker": 2,
+        "env": 181,
+        "settings": 8071,
+        "terraform": 184
+      },
+      "clone_seconds": 2.281122,
+      "commit": "50ffbe06bd26cb5b4d2016e47b51b43aea74a8b0",
+      "configuration_coverage": 0.032331,
+      "configuration_inputs": 8444,
+      "covered_inputs": 273,
+      "ecosystem": "Go/Terraform",
+      "engine_runtime_seconds": 1514.837145,
+      "files_scanned": 4274,
+      "finding_counts": {
+        "CR001": 8171,
+        "CR002": 101,
+        "CR003": 8263,
+        "CR004": 2031,
+        "CR005": 10,
+        "CR006": 18
+      },
+      "manual_review": {
+        "false_negative_count": 0,
+        "false_negatives": [],
+        "false_positive_count": 0,
+        "false_positives": [],
+        "scope": "not-yet-reviewed"
+      },
+      "repo": "hashicorp/terraform",
+      "runtime_seconds": 1514.837172,
+      "tests_scanned": 1107,
+      "uncovered_inputs": 8171,
+      "warnings": []
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "configuration_coverage": 0.035468,
+    "configuration_inputs": 18016,
+    "covered_inputs": 639,
+    "projects_requested": 10,
+    "projects_scanned": 10,
+    "reviewed_false_negatives": 0,
+    "reviewed_false_positives": 0,
+    "runtime_seconds": 1811.462762
+  }
+}
