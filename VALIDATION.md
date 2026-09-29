@@ -40,7 +40,7 @@ Publishing these errors is intentional: the purpose of this benchmark is to make
 
 ## Real-world external-project suite
 
-The suite currently covers **10 pinned open-source repositories** across Python, JavaScript, Go, Java/Spring and Terraform:
+The suite covers **10 pinned open-source repositories** across Python, JavaScript, Go, Java/Spring and Terraform:
 
 - `pallets/flask`
 - `django/django`
@@ -53,13 +53,17 @@ The suite currently covers **10 pinned open-source repositories** across Python,
 - `spring-projects/spring-petclinic`
 - `hashicorp/terraform`
 
+The published scan observed **18,016 configuration inputs**, **639 inputs with detected test/runtime evidence**, **3.5% aggregate key coverage**, and **1,811.463 seconds total scan wall time** across the 10 pinned projects. These are ConfigReach observations, not ground-truth accuracy measurements.
+
 The exact upstream commit SHAs are committed in [`validation/real_world_projects.json`](validation/real_world_projects.json). ConfigReach does not execute those projects or install their dependencies during this validation; it performs static analysis only.
 
-The generated per-project table is published at [`validation/results/real-world.md`](validation/results/real-world.md), with machine-readable output at [`validation/results/real-world.json`](validation/results/real-world.json).
+The per-project table is published at [`validation/results/real-world.md`](validation/results/real-world.md), with the original machine-readable scan output at [`validation/results/real-world.json`](validation/results/real-world.json).
 
 ### Manual real-world review
 
-Targeted spot checks are committed separately in [`validation/real_world_reviews.json`](validation/real_world_reviews.json). They currently include examples such as:
+Targeted spot checks currently cover **4 projects**, with **4 reviewed false-positive examples** and **3 reviewed false-negative examples**. The human-readable report is [`validation/results/manual-review.md`](validation/results/manual-review.md), and the machine-readable summary is [`validation/results/manual-review.json`](validation/results/manual-review.json). The review source of truth is [`validation/real_world_reviews.json`](validation/real_world_reviews.json).
+
+Examples include:
 
 - **Django false negative:** `DJANGO_SETTINGS_MODULE` is read through a constant (`ENVIRONMENT_VARIABLE`) passed to `os.environ.get`, which the current literal-key Python discovery path does not resolve.
 - **Terraform false negatives:** `TF_TEMP_LOG_PATH` and `TF_IN_AUTOMATION` are read through Go constants passed to `os.Getenv`; the current Go adapter does not perform constant propagation.
@@ -88,7 +92,7 @@ python validation/run_real_world.py \
   --markdown validation/results/real-world.md
 ```
 
-The GitHub Actions workflow [`validation.yml`](.github/workflows/validation.yml) runs both suites, uploads the evidence as an artifact and commits generated Markdown/JSON results back to `main` when they change.
+The GitHub Actions workflow [`validation.yml`](.github/workflows/validation.yml) runs both suites, uploads the evidence as an artifact and commits generated Markdown/JSON results back to `main` when they change. Its publication step rebases generated evidence onto the latest `main` before pushing, so unrelated documentation changes cannot make a long validation run stale.
 
 ## Claim boundaries
 
