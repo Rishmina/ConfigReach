@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "configreach-tree-sitter-go-example"
+version = "0.1.0"
+description = "Example optional tree-sitter Go adapter for ConfigReach"
+requires-python = ">=3.11"
+dependencies = [
+  "configreach>=0.9",
+  "tree-sitter>=0.25,<0.26",
+  "tree-sitter-go>=0.23,<0.26",
+]
+
+[project.entry-points."configreach.adapters"]
+tree-sitter-go = "configreach_tree_sitter_go:TreeSitterGoAdapter"
+
+[tool.setuptools]
+py-modules = ["configreach_tree_sitter_go"]
