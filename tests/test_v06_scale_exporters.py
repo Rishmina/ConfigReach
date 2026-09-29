@@ -4,7 +4,7 @@ from pathlib import Path
 
 from configreach.engine import scan
 from configreach.fixture_exporters import render_fixture
-from configreach.planner import PlanCase, TestPlan
+from configreach.planner import PlanCase, TestPlan as ConfigReachTestPlan
 from configreach.workspace import detect_workspaces, scan_workspaces
 
 
@@ -47,8 +47,8 @@ def test_workspace_detection_and_independent_cache_invalidation(tmp_path: Path) 
     assert states["beta"] is True
 
 
-def _sample_plan() -> TestPlan:
-    return TestPlan(
+def _sample_plan() -> ConfigReachTestPlan:
+    return ConfigReachTestPlan(
         strength=2,
         cases=[
             PlanCase(
