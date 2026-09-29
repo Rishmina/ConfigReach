@@ -12,6 +12,7 @@ from configreach.release import (
     build_release_manifest,
     canonical_archive_digest,
     compare_release_manifests,
+    normalize_sdist,
 )
 
 
@@ -25,13 +26,17 @@ def _write_wheel(path: Path, *, year: int) -> None:
         archive.writestr(metadata, b"Name: configreach\nVersion: 0.9.0\n")
 
 
-def _write_sdist(path: Path, *, gzip_mtime: int) -> None:
+def _write_sdist(path: Path, *, gzip_mtime: int, member_mtime: int = 123) -> None:
     payload = io.BytesIO()
     with tarfile.open(fileobj=payload, mode="w") as archive:
         data = b"VALUE = 1\n"
         info = tarfile.TarInfo("configreach-0.9.0/src/configreach/module.py")
         info.size = len(data)
-        info.mtime = 123
+        info.mtime = member_mtime
+        info.uid = member_mtime % 100
+        info.gid = member_mtime % 50
+        info.uname = "builder"
+        info.gname = "builder"
         archive.addfile(info, io.BytesIO(data))
     with path.open("wb") as raw:
         with gzip.GzipFile(fileobj=raw, mode="wb", mtime=gzip_mtime, filename="") as compressed:
@@ -53,6 +58,18 @@ def test_canonical_sdist_digest_ignores_gzip_timestamp(tmp_path: Path) -> None:
     _write_sdist(left, gzip_mtime=100)
     _write_sdist(right, gzip_mtime=200)
     assert left.read_bytes() != right.read_bytes()
+    assert canonical_archive_digest(left) == canonical_archive_digest(right)
+
+
+def test_normalize_sdist_produces_exact_bytes(tmp_path: Path) -> None:
+    left = tmp_path / "left.tar.gz"
+    right = tmp_path / "right.tar.gz"
+    _write_sdist(left, gzip_mtime=100, member_mtime=123)
+    _write_sdist(right, gzip_mtime=200, member_mtime=999)
+    assert left.read_bytes() != right.read_bytes()
+    normalize_sdist(left, 1700000000)
+    normalize_sdist(right, 1700000000)
+    assert left.read_bytes() == right.read_bytes()
     assert canonical_archive_digest(left) == canonical_archive_digest(right)
 
 
