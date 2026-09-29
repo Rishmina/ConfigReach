@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - pyproject.toml
 
 permissions:
   contents: read
@@ -43,6 +47,21 @@ jobs:
           if actual != expected:
               raise SystemExit(f"Release tag {actual!r} does not match package version {expected!r}")
           print(f"Publishing ConfigReach {configreach.__version__}")
+          PY
+
+      - name: Verify package and runtime versions match
+        run: |
+          python - <<'PY'
+          import pathlib
+          import tomllib
+          import configreach
+          metadata = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          package_version = metadata["project"]["version"]
+          if package_version != configreach.__version__:
+              raise SystemExit(
+                  f"pyproject version {package_version!r} does not match runtime version {configreach.__version__!r}"
+              )
+          print(f"Publishing ConfigReach {package_version}")
           PY
 
       - name: Run test suite
