@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "validation/apply_reviews.py"
+      - "validation/run_real_world.py"
       - "validation/real_world_reviews.json"
       - ".github/workflows/validation-review-refresh.yml"
 
