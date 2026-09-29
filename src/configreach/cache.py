@@ -7,7 +7,7 @@ from pathlib import Path
 from .models import ScanReport
 
 
-CACHE_SCHEMA = 1
+CACHE_SCHEMA = 2
 
 
 def repository_fingerprint(root: Path, files: list[Path], config_bytes: bytes = b"") -> str:
@@ -26,7 +26,7 @@ def repository_fingerprint(root: Path, files: list[Path], config_bytes: bytes = 
 
 
 def cache_file(root: Path) -> Path:
-    return root / ".configreach" / "cache" / "scan-v2.json"
+    return root / ".configreach" / "cache" / "scan-v3.json"
 
 
 def load_cache(root: Path, fingerprint: str) -> ScanReport | None:

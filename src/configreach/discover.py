@@ -31,7 +31,7 @@ GENERIC_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     ("java", re.compile(r"System\.(?:getenv|getProperty)\(\s*['\"]([A-Za-z_][A-Za-z0-9_.-]*)['\"]\s*\)"), "env"),
     ("rust", re.compile(r"(?:std::)?env::var(?:_os)?\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\s*\)"), "env"),
     ("ruby", re.compile(r"ENV(?:\[['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\]|\.fetch\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\s*\))"), "env"),
-    ("php", re.compile(r"(?:getenv|env)\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\s*\)"), "env"),
+    ("php", re.compile(r"""(?<![A-Za-z0-9_.])(?:getenv|env)\(\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\)"""), "env"),
     ("shell", re.compile(r"\$\{([A-Z][A-Z0-9_]*)\}|\$([A-Z][A-Z0-9_]*)"), "env"),
 ]
 
@@ -96,6 +96,7 @@ class PythonVisitor(ast.NodeVisitor):
         self.class_stack: list[tuple[str, str | None]] = []
         self.binding_stack: list[dict[str, str]] = [{}]
         self.function_stack: list[str] = []
+        self.enum_domains: dict[str, set[str]] = {}
 
     def item(self, name: str) -> ConfigKey:
         return _item(self.keys, name, language="python")
@@ -116,6 +117,35 @@ class PythonVisitor(ast.NodeVisitor):
     def bindings(self) -> dict[str, str]:
         return self.binding_stack[-1]
 
+    def _scenario(self) -> str:
+        return f"{self.rel}::{self.function_stack[-1]}" if self.function_stack else self.rel
+
+    def _record_test_value(self, key: ConfigKey, value: object, node: ast.AST, detail: str) -> None:
+        safe = _safe_value(key.name, value)
+        key.tested_values.add(safe)
+        key.test_value_observations.setdefault(self._scenario(), set()).add(safe)
+        key.test_mentions.append(Location(self.rel, getattr(node, "lineno", 1), "test", detail))
+
+    def _annotation_domain(self, node: ast.AST | None) -> set[str]:
+        if node is None:
+            return set()
+        dotted = self._dotted(node)
+        if dotted in {"bool", "builtins.bool"}:
+            return {"true", "false"}
+        if isinstance(node, ast.Subscript):
+            base = self._dotted(node.value)
+            if base.endswith("Literal"):
+                values = node.slice.elts if isinstance(node.slice, ast.Tuple) else [node.slice]
+                out = set()
+                for value_node in values:
+                    value = _literal(value_node)
+                    if value is not None:
+                        out.add(str(value).lower() if isinstance(value, bool) else str(value))
+                return out
+        if dotted in self.enum_domains:
+            return set(self.enum_domains[dotted])
+        return set()
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         self.binding_stack.append({})
         self.function_stack.append(node.name)
@@ -131,6 +161,15 @@ class PythonVisitor(ast.NodeVisitor):
         self.binding_stack.pop()
 
     def visit_Assign(self, node: ast.Assign) -> None:
+        if self.is_test:
+            assigned = _literal(node.value)
+            for target in node.targets:
+                if isinstance(target, ast.Subscript) and self._dotted(target.value) == "os.environ":
+                    key_name = _literal(target.slice)
+                    if isinstance(key_name, str) and assigned is not None:
+                        key = self.item(key_name)
+                        key.categories.add("env")
+                        self._record_test_value(key, assigned, node, "os.environ assignment")
         name = self._env_name_from_expr(node.value)
         if name:
             for target in node.targets:
@@ -153,6 +192,15 @@ class PythonVisitor(ast.NodeVisitor):
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         base_names = {self._dotted(base) for base in node.bases}
+        if any(name.endswith(("Enum", "StrEnum", "IntEnum")) for name in base_names):
+            values: set[str] = set()
+            for child in node.body:
+                value_node = child.value if isinstance(child, (ast.Assign, ast.AnnAssign)) else None
+                value = _literal(value_node)
+                if value is not None:
+                    values.add(str(value).lower() if isinstance(value, bool) else str(value))
+            if values:
+                self.enum_domains[node.name] = values
         is_pydantic = any(name.endswith("BaseSettings") for name in base_names)
         is_generic = node.name.lower().endswith(("settings", "config", "configuration"))
         kind = "pydantic" if is_pydantic else ("config-class" if is_generic else None)
@@ -174,6 +222,12 @@ class PythonVisitor(ast.NodeVisitor):
             key = self.item(name)
             key.categories.update({"settings", kind or "config-class"})
             key.declarations.append(Location(self.rel, getattr(node, "lineno", 1), "declaration", f"{kind}:{class_name}.{field_name}"))
+            domain = self._annotation_domain(node.annotation)
+            if domain:
+                key.expected_values.update(_safe_value(name, value) for value in domain)
+                if {value.lower() for value in domain} >= {"true", "false"}:
+                    key.branch_values.update({"true", "false"})
+                key.validators.add("annotation-domain")
             default = _literal(node.value)
             if default is not None:
                 if is_sensitive(name) and str(default):
@@ -209,17 +263,21 @@ class PythonVisitor(ast.NodeVisitor):
             if isinstance(name, str):
                 key = self.item(name)
                 key.categories.add("env")
-                key.test_mentions.append(Location(self.rel, getattr(node, "lineno", 1), "test", "monkeypatch.setenv"))
                 if value is not None:
-                    key.tested_values.add(_safe_value(name, value))
+                    self._record_test_value(key, value, node, "monkeypatch.setenv")
+                else:
+                    key.test_mentions.append(Location(self.rel, getattr(node, "lineno", 1), "test", "monkeypatch.setenv"))
 
         call_name = dotted.split(".")[-1]
         if call_name in {"is_enabled", "feature_enabled", "flag_enabled", "isFeatureEnabled", "variation"} and node.args:
             name = _literal(node.args[0])
             if isinstance(name, str):
                 self._record_read(name, node, category="feature-flag")
-                self.item(name).expected_values.update({"true", "false"})
-                self.item(name).branch_values.update({"true", "false"})
+                flag = self.item(name)
+                flag.expected_values.update({"true", "false"})
+                flag.branch_values.update({"true", "false"})
+                if not self.is_test:
+                    flag.branches.append(Location(self.rel, getattr(node, "lineno", 1), "branch", "feature-flag:boolean"))
 
         self.generic_visit(node)
 
@@ -260,8 +318,12 @@ class PythonVisitor(ast.NodeVisitor):
                 value = _literal(comparator)
                 if value is not None:
                     safe = _safe_value(name, value)
-                    self.item(name).expected_values.add(safe)
-                    self.item(name).branch_values.add(safe)
+                    key = self.item(name)
+                    key.expected_values.add(safe)
+                    key.branch_values.add(safe)
+                    if not self.is_test:
+                        op = type(node.ops[0]).__name__ if node.ops else "Compare"
+                        key.branches.append(Location(self.rel, getattr(node, "lineno", 1), "branch", f"{op}:{safe}"))
         self.generic_visit(node)
 
     def _env_name_from_expr(self, node: ast.AST) -> str | None:
@@ -313,7 +375,7 @@ def _record_generic(text: str, rel: str, is_test: bool, keys: dict[str, ConfigKe
         key = _item(keys, name, language="github-actions", category="secret" if kind == "secrets" else "actions-var")
         key.declarations.append(Location(rel, _line_number(text, match.start()), "declaration", f"github-{kind}"))
 
-    if is_test:
+    if is_test and not rel.endswith(".py"):
         for pattern in TEST_VALUE_PATTERNS:
             for match in pattern.finditer(text):
                 gd = match.groupdict()
@@ -324,7 +386,9 @@ def _record_generic(text: str, rel: str, is_test: bool, keys: dict[str, ConfigKe
                 key = keys.setdefault(name, ConfigKey(name=name))
                 key.test_mentions.append(Location(rel, _line_number(text, match.start()), "test", "assignment"))
                 if value is not None:
-                    key.tested_values.add(_clean_test_value(name, value))
+                    clean = _clean_test_value(name, value)
+                    key.tested_values.add(clean)
+                    key.test_value_observations.setdefault(rel, set()).add(clean)
 
 
 def _record_env_file(text: str, rel: str, keys: dict[str, ConfigKey]) -> None:
@@ -374,6 +438,8 @@ def _record_structured(path: Path, text: str, rel: str, keys: dict[str, ConfigKe
             key = _item(keys, name, category="settings")
             key.declarations.append(Location(rel, 1, "declaration", suffix.lstrip(".")))
             if not isinstance(value, (dict, list)):
+                if is_sensitive(name) and str(value):
+                    key.sensitive_default_present = True
                 key.defaults.add(_safe_value(name, value))
 
 
@@ -409,6 +475,8 @@ def _record_yaml(text: str, rel: str, keys: dict[str, ConfigKey], *, helm: bool 
             key = _item(keys, name, category="deployment")
             key.declarations.append(Location(rel, idx, "declaration", "yaml-env"))
             if value:
+                if is_sensitive(name):
+                    key.sensitive_default_present = True
                 key.defaults.add(_safe_value(name, value.strip('"\'')))
         name_match = re.match(r"^\s*-?\s*name:\s*([A-Z][A-Z0-9_]{1,})\s*$", line)
         if name_match:
@@ -428,6 +496,8 @@ def _record_yaml(text: str, rel: str, keys: dict[str, ConfigKey], *, helm: bool 
             key = _item(keys, name, category="deployment")
             key.declarations.append(Location(rel, idx, "declaration", "yaml"))
             if value and value not in {"|", ">", "{}", "[]"}:
+                if is_sensitive(name):
+                    key.sensitive_default_present = True
                 key.defaults.add(_safe_value(name, value.strip('"\'')))
         elif helm and value and dotted:
             key = _item(keys, dotted, category="helm")
@@ -443,7 +513,10 @@ def _record_terraform(text: str, rel: str, keys: dict[str, ConfigKey]) -> None:
         key.declarations.append(Location(rel, _line_number(text, match.start()), "declaration", "terraform"))
         default_match = re.search(r"\bdefault\s*=\s*([^\n]+)", body)
         if default_match:
-            key.defaults.add(_safe_value(name, default_match.group(1).strip().strip('"\'')))
+            raw_default = default_match.group(1).strip().strip('"\'')
+            if is_sensitive(name) and raw_default:
+                key.sensitive_default_present = True
+            key.defaults.add(_safe_value(name, raw_default))
         validation = re.search(r"\bvalidation\s*\{", body)
         if validation:
             key.validators.add("terraform-validation")
@@ -457,6 +530,8 @@ def _record_makefile(text: str, rel: str, keys: dict[str, ConfigKey]) -> None:
             key = _item(keys, name, category="make")
             key.declarations.append(Location(rel, lineno, "declaration", "make"))
             if value:
+                if is_sensitive(name):
+                    key.sensitive_default_present = True
                 key.defaults.add(_safe_value(name, value))
 
 
@@ -566,6 +641,7 @@ def scan(root: str | Path = ".", settings: Settings | None = None, *, use_cache:
     tests_scanned = 0
     warnings: list[str] = []
     test_files: list[tuple[str, str]] = []
+    test_global_overwrites: list[Location] = []
     adapters, plugin_warnings = load_adapters() if settings.plugins else ([], [])
     warnings.extend(plugin_warnings)
 
@@ -585,8 +661,8 @@ def scan(root: str | Path = ".", settings: Settings | None = None, *, use_cache:
         tests_scanned += int(is_test)
         if is_test:
             test_files.append((rel, text))
-            if GLOBAL_ENV_OVERWRITE.search(text):
-                warnings.append(f"Test may overwrite the global environment: {rel}")
+            for overwrite in GLOBAL_ENV_OVERWRITE.finditer(text):
+                test_global_overwrites.append(Location(rel, _line_number(text, overwrite.start()), "test", "global-environment-overwrite"))
 
         if path.suffix.lower() == ".py":
             try:
@@ -636,6 +712,7 @@ def scan(root: str | Path = ".", settings: Settings | None = None, *, use_cache:
         str(root_path), keys, files_scanned, tests_scanned, warnings,
         scan_seconds=time.perf_counter() - started,
         package_roots=_package_roots(root_path, files),
+        test_global_overwrites=test_global_overwrites,
     )
     apply_baseline(report, baseline_path(root_path, settings.baseline))
 

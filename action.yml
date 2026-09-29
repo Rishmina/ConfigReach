@@ -10,7 +10,7 @@ inputs:
     required: false
     default: "0"
   fail-on:
-    description: Optional finding policy (uncovered, undeclared, untested-values, unsafe-default, warning, error, CRxxx)
+    description: Optional finding policy (uncovered, undeclared, untested-values, unsafe-default, default-only, global-env-overwrite, warning, error, CRxxx)
     required: false
     default: "error"
   format:

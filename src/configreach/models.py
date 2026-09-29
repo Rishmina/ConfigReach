@@ -34,6 +34,8 @@ class ConfigKey:
     reads: list[Location] = field(default_factory=list)
     declarations: list[Location] = field(default_factory=list)
     test_mentions: list[Location] = field(default_factory=list)
+    branches: list[Location] = field(default_factory=list)
+    test_value_observations: dict[str, set[str]] = field(default_factory=dict)
     defaults: set[str] = field(default_factory=set)
     expected_values: set[str] = field(default_factory=set)
     tested_values: set[str] = field(default_factory=set)
@@ -68,6 +70,14 @@ class ConfigKey:
         if not self.branch_values:
             return None
         return len(self.branch_values & self.tested_values) / len(self.branch_values)
+
+    @property
+    def explicit_default_only(self) -> bool:
+        """True when explicit test values only exercise defaults despite known alternatives."""
+        if not self.defaults or not self.tested_values:
+            return False
+        non_default_domain = self.expected_values - self.defaults
+        return bool(non_default_domain) and self.tested_values <= self.defaults
 
     @property
     def blast_radius_files(self) -> int:
@@ -120,6 +130,8 @@ class ConfigKey:
             "reads": [asdict(x) for x in sorted(set(self.reads))],
             "declarations": [asdict(x) for x in sorted(set(self.declarations))],
             "test_mentions": [asdict(x) for x in sorted(set(self.test_mentions))],
+            "branches": [asdict(x) for x in sorted(set(self.branches))],
+            "test_value_observations": {k: sorted(v) for k, v in sorted(self.test_value_observations.items())},
             "defaults": sorted(self.public_value(x) for x in self.defaults),
             "expected_values": sorted(self.public_value(x) for x in self.expected_values),
             "tested_values": sorted(self.public_value(x) for x in self.tested_values),
@@ -135,6 +147,7 @@ class ConfigKey:
             "functions": sorted(self.functions),
             "unsafe_sensitive_default": self.unsafe_sensitive_default,
             "sensitive_default_present": self.sensitive_default_present,
+            "explicit_default_only": self.explicit_default_only,
         }
 
     @classmethod
@@ -143,6 +156,8 @@ class ConfigKey:
         item.reads = [Location(**x) for x in data.get("reads", [])]
         item.declarations = [Location(**x) for x in data.get("declarations", [])]
         item.test_mentions = [Location(**x) for x in data.get("test_mentions", [])]
+        item.branches = [Location(**x) for x in data.get("branches", [])]
+        item.test_value_observations = {str(k): set(v) for k, v in data.get("test_value_observations", {}).items()}
         item.defaults = set(data.get("defaults", []))
         item.expected_values = set(data.get("expected_values", []))
         item.tested_values = set(data.get("tested_values", []))
@@ -181,6 +196,7 @@ class ScanReport:
     scan_seconds: float = 0.0
     cache_hit: bool = False
     package_roots: list[str] = field(default_factory=list)
+    test_global_overwrites: list[Location] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -267,14 +283,25 @@ class ScanReport:
             hit += sum(1 for x in expected if x.lower() in tested_lower)
         return hit / total if total else None
 
+    @staticmethod
+    def _dependency_scope(loc: Location) -> str:
+        # Python AST reads carry a function name; other adapters conservatively scope to file.
+        if loc.detail.startswith("python:") and loc.detail != "python:module":
+            return f"{loc.path}::{loc.detail.split(':', 1)[1]}"
+        return loc.path
+
     @property
-    def pairwise_pairs(self) -> set[tuple[str, str]]:
-        by_source: dict[str, set[str]] = {}
+    def dependency_scopes(self) -> dict[str, set[str]]:
+        by_scope: dict[str, set[str]] = {}
         for item in self.effective_keys:
             for loc in item.reads:
-                by_source.setdefault(loc.path, set()).add(item.name)
+                by_scope.setdefault(self._dependency_scope(loc), set()).add(item.name)
+        return by_scope
+
+    @property
+    def pairwise_pairs(self) -> set[tuple[str, str]]:
         pairs: set[tuple[str, str]] = set()
-        for names in by_source.values():
+        for names in self.dependency_scopes.values():
             for a, b in combinations(sorted(names), 2):
                 pairs.add((a, b))
         return pairs
@@ -296,6 +323,42 @@ class ScanReport:
     def combination_coverage(self) -> float | None:
         total = len(self.pairwise_pairs)
         return None if total == 0 else len(self.covered_pairs) / total
+
+    @property
+    def expected_value_pairs(self) -> set[tuple[str, str, str, str]]:
+        """Known pairwise value states for keys that interact in a dependency scope."""
+        out: set[tuple[str, str, str, str]] = set()
+        for a, b in self.pairwise_pairs:
+            left, right = self.keys[a], self.keys[b]
+            # Bound pathological domains; ConfigReach is a coverage analyzer, not a Cartesian-product generator.
+            if not left.expected_values or not right.expected_values:
+                continue
+            if len(left.expected_values) * len(right.expected_values) > 256:
+                continue
+            for av in sorted(left.expected_values):
+                for bv in sorted(right.expected_values):
+                    out.add((a, av, b, bv))
+        return out
+
+    @property
+    def covered_value_pairs(self) -> set[tuple[str, str, str, str]]:
+        out: set[tuple[str, str, str, str]] = set()
+        expected = self.expected_value_pairs
+        for a, b in self.pairwise_pairs:
+            left, right = self.keys[a], self.keys[b]
+            shared = set(left.test_value_observations) & set(right.test_value_observations)
+            for scenario in shared:
+                for av in left.test_value_observations[scenario]:
+                    for bv in right.test_value_observations[scenario]:
+                        candidate = (a, av, b, bv)
+                        if candidate in expected:
+                            out.add(candidate)
+        return out
+
+    @property
+    def value_combination_coverage(self) -> float | None:
+        total = len(self.expected_value_pairs)
+        return None if total == 0 else len(self.covered_value_pairs) / total
 
     @property
     def findings(self) -> list[Finding]:
@@ -323,14 +386,19 @@ class ScanReport:
             risky = sorted(v for v in missing_values if v.lower() in {"prod", "production", "live", "real"})
             if risky:
                 out.append(Finding("CR007", "warning", f"{item.name} has production-like untested values: {', '.join(risky)}", item.name, loc))
+            if item.explicit_default_only:
+                alternatives = sorted(item.expected_values - item.defaults)
+                out.append(Finding("CR008", "warning", f"{item.name} explicit test values only exercise defaults; alternatives not exercised: {', '.join(alternatives)}", item.name, loc))
             aliases = alias_groups.get(normalized_name(item.name))
             if aliases:
                 out.append(Finding("CR006", "warning", f"Potential inconsistent configuration naming: {', '.join(sorted(set(aliases)))}", item.name, loc))
+        for loc in sorted(set(self.test_global_overwrites)):
+            out.append(Finding("CR009", "warning", f"Test mutates the global environment in a way that may leak configuration state: {loc.path}:{loc.line}", "<global-environment>", loc))
         return out
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 2,
+            "schema_version": 3,
             "root": self.root,
             "summary": {
                 "files_scanned": self.files_scanned,
@@ -348,6 +416,10 @@ class ScanReport:
                 "pairwise_combinations": len(self.pairwise_pairs),
                 "covered_pairwise_combinations": len(self.covered_pairs),
                 "combination_coverage": None if self.combination_coverage is None else round(self.combination_coverage, 6),
+                "known_value_combinations": len(self.expected_value_pairs),
+                "covered_value_combinations": len(self.covered_value_pairs),
+                "value_combination_coverage": None if self.value_combination_coverage is None else round(self.value_combination_coverage, 6),
+                "dependency_scopes": len(self.dependency_scopes),
                 "undeclared_used": self.undeclared_used,
                 "declared_unused": self.declared_unused,
                 "findings": len(self.findings),
@@ -355,6 +427,7 @@ class ScanReport:
             },
             "keys": [self.keys[name].to_dict() for name in sorted(self.keys)],
             "findings": [f.to_dict() for f in self.findings],
+            "test_global_overwrites": [asdict(x) for x in sorted(set(self.test_global_overwrites))],
             "warnings": self.warnings,
         }
 
@@ -371,6 +444,7 @@ class ScanReport:
             scan_seconds=float(summary.get("scan_seconds", 0.0)),
             cache_hit=bool(summary.get("cache_hit", False)),
             package_roots=list(summary.get("package_roots", [])),
+            test_global_overwrites=[Location(**x) for x in data.get("test_global_overwrites", [])],
         )
 
     def key(self, name: str) -> ConfigKey | None:

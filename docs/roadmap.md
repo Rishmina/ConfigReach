@@ -11,27 +11,31 @@
 - Pydantic settings and generic feature-flag discovery.
 - Dockerfile, properties, Helm-values and GitHub Actions configuration discovery.
 - Boolean/value coverage and deterministic pairwise key-combination coverage.
-- Legacy baseline files.
-- Persistent repository scan cache.
-- Package-root detection for monorepos.
-- Searchable standalone HTML configuration graph.
-- GitHub-ready PR comment generation and an example auto-comment workflow.
-- Entry-point based adapter/plugin SDK.
-- Additional deterministic findings for known untested values, sensitive defaults and likely naming inconsistencies.
+- Legacy baselines, persistent cache and package-root detection for monorepos.
+- Searchable standalone HTML graph, PR comments and entry-point plugin SDK.
+- Deterministic findings for untested values, sensitive defaults and naming inconsistencies.
 
-## v0.3 — deeper language semantics
-- AST-backed JavaScript/TypeScript and Go adapters.
-- Framework adapters for Spring, .NET configuration and popular feature-flag SDKs.
-- Function-level configuration dependency graph instead of file-level pairwise approximation.
-- Changed-line-aware base/head comparison without requiring a second checkout.
+## v0.3 — semantic coverage and PR deltas ✅
+- Function-scoped Python configuration dependency graph.
+- Branch source provenance.
+- `Literal`, Enum and bool annotation domains for Python settings.
+- Explicit pairwise value-state coverage based on test scenarios.
+- Merge-base vs current-tree PR scanning for newly introduced keys, removed keys and changed value/default/branch domains.
+- Findings for explicit default-only testing and global-environment test mutation.
+- Cross-version cache schema invalidation and Python 3.11–3.13 CI coverage.
+
+## v0.4 — deeper language semantics
+- Parser/AST-backed JavaScript/TypeScript and Go adapters while preserving a zero-dependency core through optional adapters.
+- Framework adapters for Spring, .NET configuration and additional feature-flag SDKs.
+- Changed-line dependency slicing beyond file-level touched-key detection.
 - Workspace-local incremental cache invalidation for very large monorepos.
+- Richer validator-domain extraction across languages.
 
-## v0.4 — richer testing guidance
-- N-wise combination planning without executing generated tests.
-- Explicit validator-domain extraction across languages.
-- Test fixture suggestions exported as deterministic data, not generated prose.
+## v0.5 — testing guidance
+- Deterministic N-wise combination planning without executing generated tests.
+- Test fixture suggestions exported as structured deterministic data, not generated prose.
 
 ## v1.0
 - Stable report schema and plugin contract.
 - Versioned adapter capability matrix.
-- Reproducibility suite across operating systems and Python versions.
+- Reproducibility suite across operating systems and supported Python versions.

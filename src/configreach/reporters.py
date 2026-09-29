@@ -28,7 +28,8 @@ def text_report(report: ScanReport) -> str:
         f"Branch-state coverage:      {_pct(report.branch_coverage)}",
         f"Enum coverage:              {_pct(report.enum_coverage)}",
         f"Boolean coverage:           {_pct(report.boolean_coverage)}",
-        f"Pairwise combo coverage:    {_pct(report.combination_coverage)}",
+        f"Pairwise key coverage:      {_pct(report.combination_coverage)}",
+        f"Pairwise value coverage:    {_pct(report.value_combination_coverage)}",
         f"Used but undeclared:        {report.undeclared_used}",
         f"Declared but unused:        {report.declared_unused}",
         f"Package roots:              {len(report.package_roots)}",
@@ -64,7 +65,8 @@ def markdown_report(report: ScanReport) -> str:
         f"| Branch-state coverage | {_pct(report.branch_coverage)} |",
         f"| Enum coverage | {_pct(report.enum_coverage)} |",
         f"| Boolean coverage | {_pct(report.boolean_coverage)} |",
-        f"| Pairwise combination coverage | {_pct(report.combination_coverage)} |",
+        f"| Pairwise key combination coverage | {_pct(report.combination_coverage)} |",
+        f"| Pairwise value-state coverage | {_pct(report.value_combination_coverage)} |",
         f"| Used but undeclared | {report.undeclared_used} |",
         f"| Declared but unused | {report.declared_unused} |",
         "", "## Configuration matrix", "",
@@ -99,6 +101,8 @@ def sarif_report(report: ScanReport) -> str:
         "CR005": {"name": "sensitive-default", "shortDescription": {"text": "Sensitive-looking configuration has a non-empty default"}},
         "CR006": {"name": "inconsistent-name", "shortDescription": {"text": "Potential inconsistent configuration naming"}},
         "CR007": {"name": "production-value-untested", "shortDescription": {"text": "Production-like configuration value is not exercised"}},
+        "CR008": {"name": "default-only-test-values", "shortDescription": {"text": "Explicit tests only exercise default configuration values"}},
+        "CR009": {"name": "global-environment-overwrite", "shortDescription": {"text": "A test mutates the global environment and may leak configuration state"}},
     }
     results: list[dict[str, Any]] = []
     for finding in report.findings:
@@ -140,7 +144,7 @@ def html_report(report: ScanReport) -> str:
             f'<td>{html.escape(", ".join(sorted(item.categories)) or "—")}</td></tr>'
         )
         locations = []
-        for loc in sorted(set(item.reads + item.declarations + item.test_mentions)):
+        for loc in sorted(set(item.reads + item.branches + item.declarations + item.test_mentions)):
             locations.append(
                 f'<li><a href="{html.escape(loc.path)}#L{loc.line}">{html.escape(loc.path)}:{loc.line}</a> '
                 f'<span>{html.escape(loc.kind)} · {html.escape(loc.detail)}</span></li>'
@@ -157,7 +161,7 @@ def html_report(report: ScanReport) -> str:
 body{{font:15px system-ui,sans-serif;max-width:1180px;margin:40px auto;padding:0 20px;color:#1f2328}}h1{{margin-bottom:4px}}.hero{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}}.metric{{border:1px solid #d0d7de;border-radius:10px;padding:14px}}.metric b{{font-size:24px;display:block}}input{{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d0d7de;border-radius:8px;margin:12px 0 18px}}table{{width:100%;border-collapse:collapse}}th,td{{padding:8px;border-bottom:1px solid #d8dee4;text-align:left}}th{{position:sticky;top:0;background:white}}.covered{{color:#116329}}.uncovered{{color:#cf222e;font-weight:700}}code{{background:#f6f8fa;padding:2px 5px;border-radius:4px}}details{{border:1px solid #d8dee4;border-radius:8px;padding:9px 12px;margin:8px 0}}summary{{cursor:pointer}}li span{{color:#57606a}}footer{{margin:30px 0;color:#57606a}}
 </style></head><body>
 <h1>ConfigReach</h1><p>Deterministic configuration coverage report</p>
-<div class="hero"><div class="metric"><b>{report.coverage*100:.1f}%</b>key coverage</div><div class="metric"><b>{_pct(report.value_coverage)}</b>value coverage</div><div class="metric"><b>{_pct(report.branch_coverage)}</b>branch coverage</div><div class="metric"><b>{_pct(report.boolean_coverage)}</b>boolean coverage</div><div class="metric"><b>{_pct(report.combination_coverage)}</b>pairwise coverage</div><div class="metric"><b>{report.uncovered}</b>uncovered</div><div class="metric"><b>{len(report.findings)}</b>findings</div></div>
+<div class="hero"><div class="metric"><b>{report.coverage*100:.1f}%</b>key coverage</div><div class="metric"><b>{_pct(report.value_coverage)}</b>value coverage</div><div class="metric"><b>{_pct(report.branch_coverage)}</b>branch coverage</div><div class="metric"><b>{_pct(report.boolean_coverage)}</b>boolean coverage</div><div class="metric"><b>{_pct(report.combination_coverage)}</b>key-pair coverage</div><div class="metric"><b>{_pct(report.value_combination_coverage)}</b>value-pair coverage</div><div class="metric"><b>{report.uncovered}</b>uncovered</div><div class="metric"><b>{len(report.findings)}</b>findings</div></div>
 <label for="q"><b>Search configuration graph</b></label><input id="q" type="search" placeholder="Search key or category…">
 <h2>Configuration matrix</h2><table><thead><tr><th>Key</th><th>Covered</th><th>Used</th><th>Declared</th><th>Value coverage</th><th>Blast radius</th><th>Categories</th></tr></thead><tbody id="matrix">{''.join(rows)}</tbody></table>
 <h2>Configuration graph</h2><p>Each node links a configuration key to its detected source, declaration and test locations.</p><section id="graph">{''.join(graph_cards)}</section>

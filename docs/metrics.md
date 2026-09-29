@@ -10,24 +10,26 @@ Keys present in the baseline remain visible but are excluded from the effective 
 
 ## Value coverage
 
-ConfigReach reports value coverage only when an expected value domain is explicitly knowable, for example:
+ConfigReach reports value coverage only when an expected value domain is explicitly knowable. Current Python sources include comparisons, argparse choices, `Literal[...]`, Enum-backed settings, bool annotations and feature flags. Unknown domains are not assigned fabricated percentages.
 
-- Python comparisons such as `os.getenv("MODE") == "live"`,
-- argparse `choices`,
-- boolean feature flags.
+## Boolean, enum and branch-state coverage
 
-Unknown domains are not assigned fabricated percentages.
+Boolean coverage measures explicit `true`/`false` states. Enum coverage excludes pure booleans and measures known discrete domains. Branch-state coverage uses values found in configuration-dependent branches and checks which of those values appear in explicit test-value evidence. Branch source locations are retained in the report.
 
-## Boolean coverage
+## Pairwise key coverage
 
-When a key is identified as boolean, the known domain is `true` and `false`. The metric reports how many of those states appear in detected test-value evidence.
+ConfigReach creates interaction pairs from dependency scopes. Python AST reads are scoped to the function that reads them; other language adapters conservatively use file scope. A key pair is covered when both keys have evidence in the same detected test file.
 
-## Pairwise configuration-combination coverage
+This avoids treating two settings used in unrelated Python functions as an interaction merely because they share a source file.
 
-For every application source file that reads two or more configuration keys, ConfigReach creates key pairs. A pair is covered when both keys appear in the same detected test file. This catches a common gap where two individually-tested settings interact in application code but are never tested together.
+## Pairwise value-state coverage
 
-This metric is intentionally conservative and does not imply full combinatorial testing of all values.
+When both keys in an interaction pair have finite known domains, ConfigReach builds the bounded pairwise value state space. It then checks explicit test-value observations that occur in the same test scenario (`path::test_function` for Python, file scope for conservative adapters).
+
+Example: if `FEATURE_A={true,false}` and `MODE={sandbox,live}`, there are four known pairwise states. Tests that explicitly exercise `(true,sandbox)` and `(false,live)` cover 2/4 = 50%. Domains with more than 256 Cartesian pair states are not expanded.
+
+This metric is deterministic and evidence-based; it does not claim that unknown or semantically impossible combinations are testable.
 
 ## Blast radius
 
-A key's blast radius is the count of distinct application source files and top-level modules that read it. PR reports show this number to distinguish a local setting from configuration that changes behavior across many modules.
+A key's blast radius is the count of distinct application source files and top-level modules that read it. PR reports show both counts and compare the merge-base snapshot with the current tree.
