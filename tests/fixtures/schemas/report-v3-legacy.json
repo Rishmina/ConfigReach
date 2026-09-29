@@ -1,0 +1,15 @@
+{
+  "schema_version": 3,
+  "root": ".",
+  "summary": {
+    "files_scanned": 1,
+    "tests_scanned": 1,
+    "configuration_inputs": 1,
+    "covered_inputs": 1,
+    "uncovered_inputs": 0,
+    "coverage": 1.0
+  },
+  "keys": [],
+  "findings": [],
+  "warnings": []
+}
