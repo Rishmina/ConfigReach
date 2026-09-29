@@ -1,0 +1,76 @@
+name: Validation evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/configreach/**"
+      - "validation/run_real_world.py"
+      - "validation/real_world_projects.json"
+      - "validation/real_world_reviews.json"
+      - "validation/accuracy/**"
+      - ".github/workflows/validation.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: configreach-validation-main
+  cancel-in-progress: true
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ConfigReach from source
+        run: python -m pip install -e .
+
+      - name: Score hand-labelled accuracy corpus
+        run: |
+          python validation/accuracy/run_accuracy.py \
+            --corpus validation/accuracy/corpus.json \
+            --json validation/results/accuracy.json \
+            --markdown validation/results/accuracy.md
+
+      - name: Scan pinned real-world repositories
+        run: |
+          python validation/run_real_world.py \
+            --manifest validation/real_world_projects.json \
+            --reviews validation/real_world_reviews.json \
+            --json validation/results/real-world.json \
+            --markdown validation/results/real-world.md
+
+      - name: Add validation summary
+        run: |
+          cat validation/results/accuracy.md >> "$GITHUB_STEP_SUMMARY"
+          printf '\n---\n\n' >> "$GITHUB_STEP_SUMMARY"
+          cat validation/results/real-world.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: configreach-validation-evidence
+          path: validation/results/
+          if-no-files-found: error
+
+      - name: Publish generated results to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/results/accuracy.json validation/results/accuracy.md validation/results/real-world.json validation/results/real-world.md
+          if git diff --cached --quiet; then
+            echo "Validation results are unchanged."
+          else
+            git commit -m "validation: publish reproducible evidence"
+            git push origin HEAD:main
+          fi
