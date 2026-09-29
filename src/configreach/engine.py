@@ -9,6 +9,7 @@ from .baseline import apply_baseline, baseline_path
 from .config import Settings, load_settings
 from .discover import scan as core_scan
 from .models import ConfigKey, Location, ScanReport
+from .schemas import REPORT_SCHEMA_VERSION
 from .semantic_adapters import (
     record_dotnet,
     record_go,
@@ -54,8 +55,8 @@ class SemanticScanReport(ScanReport):
 
     def to_dict(self):
         data = super().to_dict()
-        data["schema_version"] = 5
-        data["summary"]["semantic_engine"] = "v0.6"
+        data["schema_version"] = REPORT_SCHEMA_VERSION
+        data["summary"]["semantic_engine"] = "v0.8"
         return data
 
 
