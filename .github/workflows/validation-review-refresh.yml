@@ -1,0 +1,64 @@
+name: Refresh validation reviews
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "validation/apply_reviews.py"
+      - "validation/real_world_reviews.json"
+      - ".github/workflows/validation-review-refresh.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: configreach-validation-review-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ConfigReach from source
+        run: python -m pip install -e .
+
+      - name: Apply manual reviews to published scan evidence
+        run: |
+          python validation/apply_reviews.py \
+            --source-revision c9b5d5d1b9c62bcc45ad71e90677535943897472
+
+      - name: Verify reviewed evidence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('validation/results/real-world.json').read_text())
+          summary = data['summary']
+          assert summary['projects_with_manual_review'] == 4
+          assert summary['reviewed_false_positives'] == 4
+          assert summary['reviewed_false_negatives'] == 3
+          assert data['tool']['source_revision'] == 'c9b5d5d1b9c62bcc45ad71e90677535943897472'
+          print(summary)
+          PY
+
+      - name: Publish refreshed evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/results/real-world.json validation/results/real-world.md
+          if git diff --cached --quiet; then
+            echo "Review evidence already current."
+          else
+            git commit -m "validation: attach reviewed FP/FN evidence"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
