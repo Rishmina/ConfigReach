@@ -4,28 +4,28 @@ Static scans of pinned upstream commits. Target projects are not executed and th
 Runtime is wall-clock scan time on the recorded runner and is therefore performance evidence, not a cross-machine guarantee.
 Manual false-positive/false-negative entries are targeted spot checks, not exhaustive repository-wide error rates; measured accuracy comes from the hand-labelled corpus.
 
-Tool: ConfigReach `0.9.1` at source revision `c9b5d5d1b9c62bcc45ad71e90677535943897472`.
+Tool: ConfigReach `0.9.1` at source revision `a69bd790cf98e979a8235dbf3ea145c52a78ec3e`.
 
 | Project | Ecosystem | Configs | Covered | Coverage | Runtime | Reviewed FP | Reviewed FN |
 |---|---|---:|---:|---:|---:|---:|---:|
-| pallets/flask | Python | 161 | 24 | 14.9% | 0.851s | 0 | 0 |
-| django/django | Python | 396 | 136 | 34.3% | 75.942s | 0 | 1 |
-| pydantic/pydantic | Python | 817 | 31 | 3.8% | 55.008s | 0 | 0 |
-| encode/httpx | Python | 61 | 5 | 8.2% | 0.760s | 0 | 0 |
-| expressjs/express | JavaScript | 68 | 4 | 5.9% | 0.821s | 2 | 0 |
-| axios/axios | JavaScript | 7477 | 28 | 0.4% | 148.797s | 2 | 0 |
-| gin-gonic/gin | Go | 16 | 2 | 12.5% | 0.420s | 0 | 0 |
-| helm/helm | Go | 476 | 106 | 22.3% | 13.806s | 0 | 0 |
-| spring-projects/spring-petclinic | Java/Spring | 100 | 30 | 30.0% | 0.221s | 0 | 0 |
-| hashicorp/terraform | Go/Terraform | 8444 | 273 | 3.2% | 1514.837s | 0 | 2 |
+| pallets/flask | Python | 139 | 24 | 17.3% | 1.039s | 0 | 0 |
+| django/django | Python | 368 | 136 | 37.0% | 78.195s | 0 | 1 |
+| pydantic/pydantic | Python | 798 | 31 | 3.9% | 51.560s | 0 | 0 |
+| encode/httpx | Python | 41 | 5 | 12.2% | 0.991s | 0 | 0 |
+| expressjs/express | JavaScript | 9 | 4 | 44.4% | 0.781s | 2 | 0 |
+| axios/axios | JavaScript | 7364 | 28 | 0.4% | 137.205s | 2 | 0 |
+| gin-gonic/gin | Go | 17 | 2 | 11.8% | 0.451s | 0 | 0 |
+| helm/helm | Go | 476 | 106 | 22.3% | 12.914s | 0 | 0 |
+| spring-projects/spring-petclinic | Java/Spring | 100 | 30 | 30.0% | 0.219s | 0 | 0 |
+| hashicorp/terraform | Go/Terraform | 8465 | 273 | 3.2% | 1356.665s | 0 | 2 |
 
 ## Aggregate
 
 - Projects scanned: **10**
-- Configuration inputs discovered: **18016**
+- Configuration inputs discovered: **17777**
 - Inputs with detected test/runtime evidence: **639**
-- Aggregate key coverage: **3.5%**
-- Total scan wall time: **1811.463s**
+- Aggregate key coverage: **3.6%**
+- Total scan wall time: **1640.022s**
 - Projects with manual spot checks: **4**
 - Manually reviewed false-positive examples: **4**
 - Manually reviewed false-negative examples: **3**

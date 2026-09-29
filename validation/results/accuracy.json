@@ -1,12 +1,12 @@
 {
   "aggregate": {
-    "false_negatives": 4,
-    "false_positives": 13,
-    "macro_f1": 0.795601,
-    "micro_f1": 0.795181,
-    "micro_precision": 0.717391,
-    "micro_recall": 0.891892,
-    "true_positives": 33
+    "false_negatives": 0,
+    "false_positives": 0,
+    "macro_f1": 1.0,
+    "micro_f1": 1.0,
+    "micro_precision": 1.0,
+    "micro_recall": 1.0,
+    "true_positives": 37
   },
   "corpus": "ConfigReach hand-labelled accuracy corpus v1",
   "designed_challenges": [
@@ -28,20 +28,13 @@
   "metrics": {
     "branch_inference": {
       "expected": 7,
-      "f1": 0.7,
+      "f1": 1.0,
       "false_negatives": 0,
-      "false_positives": 6,
+      "false_positives": 0,
       "fn_items": [],
-      "fp_items": [
-        "DEBUG::false",
-        "DEBUG::true",
-        "coefficient-of-variation::false",
-        "coefficient-of-variation::true",
-        "stddev::false",
-        "stddev::true"
-      ],
-      "precision": 0.538462,
-      "predicted": 13,
+      "fp_items": [],
+      "precision": 1.0,
+      "predicted": 7,
       "recall": 1.0,
       "tp_items": [
         "GO_MODE::prod",
@@ -56,22 +49,14 @@
     },
     "config_declarations": {
       "expected": 11,
-      "f1": 0.769231,
-      "false_negatives": 1,
-      "false_positives": 5,
-      "fn_items": [
-        "service.mode"
-      ],
-      "fp_items": [
-        "name",
-        "project.name",
-        "project.version",
-        "scripts.test",
-        "version"
-      ],
-      "precision": 0.666667,
-      "predicted": 15,
-      "recall": 0.909091,
+      "f1": 1.0,
+      "false_negatives": 0,
+      "false_positives": 0,
+      "fn_items": [],
+      "fp_items": [],
+      "precision": 1.0,
+      "predicted": 11,
+      "recall": 1.0,
       "tp_items": [
         "API_TOKEN",
         "API_URL",
@@ -82,48 +67,45 @@
         "logging.level",
         "mode",
         "region",
+        "service.mode",
         "service.timeout"
       ],
-      "true_positives": 10
+      "true_positives": 11
     },
     "env_var_discovery": {
       "expected": 11,
-      "f1": 0.842105,
-      "false_negatives": 3,
+      "f1": 1.0,
+      "false_negatives": 0,
       "false_positives": 0,
-      "fn_items": [
-        "DYNAMIC_TOKEN",
-        "GO_DYNAMIC",
-        "JS_DESTRUCTURED"
-      ],
+      "fn_items": [],
       "fp_items": [],
       "precision": 1.0,
-      "predicted": 8,
-      "recall": 0.727273,
+      "predicted": 11,
+      "recall": 1.0,
       "tp_items": [
         "DOTNET_REGION",
+        "DYNAMIC_TOKEN",
+        "GO_DYNAMIC",
         "GO_MODE",
         "GO_REGION",
         "JAVA_REGION",
         "JS_API_URL",
+        "JS_DESTRUCTURED",
         "NODE_MODE",
         "PAYMENT_MODE",
         "REGION"
       ],
-      "true_positives": 8
+      "true_positives": 11
     },
     "feature_flags": {
       "expected": 2,
-      "f1": 0.666667,
+      "f1": 1.0,
       "false_negatives": 0,
-      "false_positives": 2,
+      "false_positives": 0,
       "fn_items": [],
-      "fp_items": [
-        "coefficient-of-variation",
-        "stddev"
-      ],
-      "precision": 0.5,
-      "predicted": 4,
+      "fp_items": [],
+      "precision": 1.0,
+      "predicted": 2,
       "recall": 1.0,
       "tp_items": [
         "beta-banner",
@@ -153,9 +135,14 @@
     }
   },
   "scan_summary": {
-    "configuration_inputs": 29,
+    "configuration_inputs": 25,
     "files_scanned": 15,
     "tests_scanned": 3
   },
-  "schema_version": 1
+  "schema_version": 1,
+  "tool": {
+    "name": "ConfigReach",
+    "source_revision": "a69bd790cf98e979a8235dbf3ea145c52a78ec3e",
+    "version": "0.9.1"
+  }
 }

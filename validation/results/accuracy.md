@@ -2,35 +2,37 @@
 
 Results from the repository's hand-labelled benchmark corpus. Labels are committed before scoring and include deliberately difficult positive and negative examples.
 
+Tool: ConfigReach `0.9.1` at source revision `a69bd790cf98e979a8235dbf3ea145c52a78ec3e`.
+
 | Task | Precision | Recall | F1 | TP | FP | FN |
 |---|---:|---:|---:|---:|---:|---:|
-| env var discovery | 100.0% | 72.7% | 84.2% | 8 | 0 | 3 |
-| feature flags | 50.0% | 100.0% | 66.7% | 2 | 2 | 0 |
-| config declarations | 66.7% | 90.9% | 76.9% | 10 | 5 | 1 |
+| env var discovery | 100.0% | 100.0% | 100.0% | 11 | 0 | 0 |
+| feature flags | 100.0% | 100.0% | 100.0% | 2 | 0 | 0 |
+| config declarations | 100.0% | 100.0% | 100.0% | 11 | 0 | 0 |
 | test evidence | 100.0% | 100.0% | 100.0% | 6 | 0 | 0 |
-| branch inference | 53.8% | 100.0% | 70.0% | 7 | 6 | 0 |
+| branch inference | 100.0% | 100.0% | 100.0% | 7 | 0 | 0 |
 
-**Micro precision:** 71.7%  
-**Micro recall:** 89.2%  
-**Micro F1:** 79.5%  
-**Macro F1:** 79.6%
+**Micro precision:** 100.0%  
+**Micro recall:** 100.0%  
+**Micro F1:** 100.0%  
+**Macro F1:** 100.0%
 
 ## Errors exposed by the benchmark
 
 ### Env Var Discovery
 
 - False positives: none
-- False negatives: `DYNAMIC_TOKEN`, `GO_DYNAMIC`, `JS_DESTRUCTURED`
+- False negatives: none
 
 ### Feature Flags
 
-- False positives: `coefficient-of-variation`, `stddev`
+- False positives: none
 - False negatives: none
 
 ### Config Declarations
 
-- False positives: `name`, `project.name`, `project.version`, `scripts.test`, `version`
-- False negatives: `service.mode`
+- False positives: none
+- False negatives: none
 
 ### Test Evidence
 
@@ -39,7 +41,7 @@ Results from the repository's hand-labelled benchmark corpus. Labels are committ
 
 ### Branch Inference
 
-- False positives: `DEBUG::false`, `DEBUG::true`, `coefficient-of-variation::false`, `coefficient-of-variation::true`, `stddev::false`, `stddev::true`
+- False positives: none
 - False negatives: none
 
 ## Label policy

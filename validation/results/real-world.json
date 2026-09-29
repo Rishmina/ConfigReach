@@ -20,20 +20,20 @@
         "deployment": 2,
         "env": 26,
         "make": 4,
-        "settings": 119
+        "settings": 97
       },
-      "clone_seconds": 0.824431,
+      "clone_seconds": 0.655057,
       "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
-      "configuration_coverage": 0.149068,
-      "configuration_inputs": 161,
+      "configuration_coverage": 0.172662,
+      "configuration_inputs": 139,
       "covered_inputs": 24,
       "ecosystem": "Python",
-      "engine_runtime_seconds": 0.850563,
+      "engine_runtime_seconds": 1.039339,
       "files_scanned": 101,
       "finding_counts": {
-        "CR001": 137,
+        "CR001": 115,
         "CR002": 8,
-        "CR003": 139,
+        "CR003": 117,
         "CR004": 24,
         "CR005": 2
       },
@@ -45,9 +45,9 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "pallets/flask",
-      "runtime_seconds": 0.850569,
+      "runtime_seconds": 1.039347,
       "tests_scanned": 51,
-      "uncovered_inputs": 137,
+      "uncovered_inputs": 115,
       "warnings": []
     },
     {
@@ -55,23 +55,23 @@
         "cli": 118,
         "config-class": 58,
         "deployment": 21,
-        "env": 77,
+        "env": 78,
         "make": 10,
         "secret": 2,
-        "settings": 192
+        "settings": 163
       },
-      "clone_seconds": 2.98063,
+      "clone_seconds": 2.880537,
       "commit": "9332b163a67eabe5bdbf8066b1c5da394be9aa9c",
-      "configuration_coverage": 0.343434,
-      "configuration_inputs": 396,
+      "configuration_coverage": 0.369565,
+      "configuration_inputs": 368,
       "covered_inputs": 136,
       "ecosystem": "Python",
-      "engine_runtime_seconds": 75.942365,
+      "engine_runtime_seconds": 78.19515,
       "files_scanned": 3132,
       "finding_counts": {
-        "CR001": 260,
-        "CR002": 47,
-        "CR003": 284,
+        "CR001": 232,
+        "CR002": 48,
+        "CR003": 253,
         "CR004": 90,
         "CR005": 3,
         "CR006": 4,
@@ -91,9 +91,9 @@
         "scope": "Reviewed environment-variable indirection in django/conf/__init__.py at the pinned commit."
       },
       "repo": "django/django",
-      "runtime_seconds": 75.942376,
+      "runtime_seconds": 78.195167,
       "tests_scanned": 2098,
-      "uncovered_inputs": 260,
+      "uncovered_inputs": 232,
       "warnings": [
         "Python parse failed: tests/test_runner_apps/tagged/tests_syntax_error.py"
       ]
@@ -108,23 +108,23 @@
         "make": 1,
         "pydantic": 6,
         "secret": 9,
-        "settings": 724
+        "settings": 705
       },
-      "clone_seconds": 1.257399,
+      "clone_seconds": 0.930418,
       "commit": "bb6da4cfbb1f559885ea2fa207ec93853bfeac64",
-      "configuration_coverage": 0.037944,
-      "configuration_inputs": 817,
+      "configuration_coverage": 0.038847,
+      "configuration_inputs": 798,
       "covered_inputs": 31,
       "ecosystem": "Python",
-      "engine_runtime_seconds": 55.008187,
+      "engine_runtime_seconds": 51.560194,
       "files_scanned": 664,
       "finding_counts": {
-        "CR001": 786,
+        "CR001": 767,
         "CR002": 16,
-        "CR003": 786,
+        "CR003": 767,
         "CR004": 116,
         "CR005": 21,
-        "CR006": 4
+        "CR006": 2
       },
       "manual_review": {
         "false_negative_count": 0,
@@ -134,9 +134,9 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "pydantic/pydantic",
-      "runtime_seconds": 55.008195,
+      "runtime_seconds": 51.560205,
       "tests_scanned": 354,
-      "uncovered_inputs": 786,
+      "uncovered_inputs": 767,
       "warnings": []
     },
     {
@@ -145,20 +145,20 @@
         "deployment": 2,
         "env": 3,
         "secret": 1,
-        "settings": 38
+        "settings": 18
       },
-      "clone_seconds": 0.988784,
+      "clone_seconds": 1.233925,
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
-      "configuration_coverage": 0.081967,
-      "configuration_inputs": 61,
+      "configuration_coverage": 0.121951,
+      "configuration_inputs": 41,
       "covered_inputs": 5,
       "ecosystem": "Python",
-      "engine_runtime_seconds": 0.759716,
+      "engine_runtime_seconds": 0.990684,
       "files_scanned": 68,
       "finding_counts": {
-        "CR001": 56,
+        "CR001": 36,
         "CR002": 2,
-        "CR003": 58,
+        "CR003": 38,
         "CR004": 7,
         "CR005": 1,
         "CR009": 5
@@ -171,9 +171,9 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "encode/httpx",
-      "runtime_seconds": 0.759822,
+      "runtime_seconds": 0.99103,
       "tests_scanned": 38,
-      "uncovered_inputs": 56,
+      "uncovered_inputs": 36,
       "warnings": []
     },
     {
@@ -181,21 +181,20 @@
         "deployment": 1,
         "env": 4,
         "secret": 1,
-        "settings": 63
+        "settings": 4
       },
-      "clone_seconds": 0.685205,
+      "clone_seconds": 0.502032,
       "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
-      "configuration_coverage": 0.058824,
-      "configuration_inputs": 68,
+      "configuration_coverage": 0.444444,
+      "configuration_inputs": 9,
       "covered_inputs": 4,
       "ecosystem": "JavaScript",
-      "engine_runtime_seconds": 0.821291,
+      "engine_runtime_seconds": 0.781003,
       "files_scanned": 149,
       "finding_counts": {
-        "CR001": 64,
+        "CR001": 5,
         "CR002": 2,
-        "CR003": 64,
-        "CR005": 1
+        "CR003": 3
       },
       "manual_review": {
         "false_negative_count": 0,
@@ -216,9 +215,9 @@
         "scope": "Reviewed package.json metadata alongside real NODE_ENV reads at the pinned commit."
       },
       "repo": "expressjs/express",
-      "runtime_seconds": 0.821299,
+      "runtime_seconds": 0.781016,
       "tests_scanned": 91,
-      "uncovered_inputs": 64,
+      "uncovered_inputs": 5,
       "warnings": []
     },
     {
@@ -226,21 +225,21 @@
         "deployment": 5,
         "env": 22,
         "secret": 1,
-        "settings": 7454
+        "settings": 7341
       },
-      "clone_seconds": 1.153863,
+      "clone_seconds": 0.748694,
       "commit": "2426e03ba9020be31ed013873423cea6b7cd2e67",
-      "configuration_coverage": 0.003745,
-      "configuration_inputs": 7477,
+      "configuration_coverage": 0.003802,
+      "configuration_inputs": 7364,
       "covered_inputs": 28,
       "ecosystem": "JavaScript",
-      "engine_runtime_seconds": 148.796696,
+      "engine_runtime_seconds": 137.205347,
       "files_scanned": 291,
       "finding_counts": {
-        "CR001": 7449,
+        "CR001": 7336,
         "CR002": 9,
-        "CR003": 7455,
-        "CR004": 907,
+        "CR003": 7332,
+        "CR004": 906,
         "CR005": 28,
         "CR006": 6
       },
@@ -263,29 +262,29 @@
         "scope": "Reviewed package.json metadata in a large JavaScript repository at the pinned commit."
       },
       "repo": "axios/axios",
-      "runtime_seconds": 148.796704,
+      "runtime_seconds": 137.205358,
       "tests_scanned": 179,
-      "uncovered_inputs": 7449,
+      "uncovered_inputs": 7336,
       "warnings": []
     },
     {
       "category_counts": {
         "deployment": 5,
-        "env": 5,
+        "env": 6,
         "make": 7,
         "secret": 1
       },
-      "clone_seconds": 0.699013,
+      "clone_seconds": 0.598938,
       "commit": "1bd0ecf2d3e08da37efa270bb7be20c1eddb0d68",
-      "configuration_coverage": 0.125,
-      "configuration_inputs": 16,
+      "configuration_coverage": 0.117647,
+      "configuration_inputs": 17,
       "covered_inputs": 2,
       "ecosystem": "Go",
-      "engine_runtime_seconds": 0.419546,
+      "engine_runtime_seconds": 0.451047,
       "files_scanned": 111,
       "finding_counts": {
-        "CR001": 14,
-        "CR002": 4,
+        "CR001": 15,
+        "CR002": 5,
         "CR003": 11,
         "CR004": 1,
         "CR005": 1
@@ -298,9 +297,9 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "gin-gonic/gin",
-      "runtime_seconds": 0.41955,
+      "runtime_seconds": 0.451053,
       "tests_scanned": 40,
-      "uncovered_inputs": 14,
+      "uncovered_inputs": 15,
       "warnings": []
     },
     {
@@ -313,13 +312,13 @@
         "secret": 4,
         "settings": 24
       },
-      "clone_seconds": 1.096854,
+      "clone_seconds": 0.897067,
       "commit": "8107b7604268a1753776c111457255cface0db83",
       "configuration_coverage": 0.222689,
       "configuration_inputs": 476,
       "covered_inputs": 106,
       "ecosystem": "Go",
-      "engine_runtime_seconds": 13.805704,
+      "engine_runtime_seconds": 12.914371,
       "files_scanned": 1315,
       "finding_counts": {
         "CR001": 370,
@@ -337,7 +336,7 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "helm/helm",
-      "runtime_seconds": 13.805719,
+      "runtime_seconds": 12.914393,
       "tests_scanned": 247,
       "uncovered_inputs": 370,
       "warnings": []
@@ -350,13 +349,13 @@
         "settings": 84,
         "spring": 1
       },
-      "clone_seconds": 0.770944,
+      "clone_seconds": 0.683568,
       "commit": "f3c74834e31079f69855e9c9eddb34fceb40a8d9",
       "configuration_coverage": 0.3,
       "configuration_inputs": 100,
       "covered_inputs": 30,
       "ecosystem": "Java/Spring",
-      "engine_runtime_seconds": 0.221349,
+      "engine_runtime_seconds": 0.219228,
       "files_scanned": 76,
       "finding_counts": {
         "CR001": 70,
@@ -372,7 +371,7 @@
         "scope": "not-yet-reviewed"
       },
       "repo": "spring-projects/spring-petclinic",
-      "runtime_seconds": 0.221356,
+      "runtime_seconds": 0.219236,
       "tests_scanned": 20,
       "uncovered_inputs": 70,
       "warnings": []
@@ -381,21 +380,21 @@
       "category_counts": {
         "deployment": 21,
         "docker": 2,
-        "env": 181,
+        "env": 202,
         "settings": 8071,
         "terraform": 184
       },
-      "clone_seconds": 2.281122,
+      "clone_seconds": 2.760471,
       "commit": "50ffbe06bd26cb5b4d2016e47b51b43aea74a8b0",
-      "configuration_coverage": 0.032331,
-      "configuration_inputs": 8444,
+      "configuration_coverage": 0.03225,
+      "configuration_inputs": 8465,
       "covered_inputs": 273,
       "ecosystem": "Go/Terraform",
-      "engine_runtime_seconds": 1514.837145,
+      "engine_runtime_seconds": 1356.665212,
       "files_scanned": 4274,
       "finding_counts": {
-        "CR001": 8171,
-        "CR002": 101,
+        "CR001": 8192,
+        "CR002": 122,
         "CR003": 8263,
         "CR004": 2031,
         "CR005": 10,
@@ -420,27 +419,27 @@
         "scope": "Reviewed Go environment-variable reads whose names are held in constants at the pinned commit."
       },
       "repo": "hashicorp/terraform",
-      "runtime_seconds": 1514.837172,
+      "runtime_seconds": 1356.665241,
       "tests_scanned": 1107,
-      "uncovered_inputs": 8171,
+      "uncovered_inputs": 8192,
       "warnings": []
     }
   ],
   "schema_version": 1,
   "summary": {
-    "configuration_coverage": 0.035468,
-    "configuration_inputs": 18016,
+    "configuration_coverage": 0.035945,
+    "configuration_inputs": 17777,
     "covered_inputs": 639,
     "projects_requested": 10,
     "projects_scanned": 10,
     "projects_with_manual_review": 4,
     "reviewed_false_negatives": 3,
     "reviewed_false_positives": 4,
-    "runtime_seconds": 1811.462762
+    "runtime_seconds": 1640.022046
   },
   "tool": {
     "name": "ConfigReach",
-    "source_revision": "c9b5d5d1b9c62bcc45ad71e90677535943897472",
+    "source_revision": "a69bd790cf98e979a8235dbf3ea145c52a78ec3e",
     "version": "0.9.1"
   }
 }
