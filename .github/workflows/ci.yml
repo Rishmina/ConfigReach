@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e ".[dev]"
-      - run: python -m compileall -q src tests
-      - run: python -m py_compile examples/plugins/tree_sitter_js/configreach_tree_sitter_js.py
+      - run: python -m compileall -q src tests tools benchmarks
+      - run: python -m py_compile examples/plugins/tree_sitter_js/configreach_tree_sitter_js.py examples/plugins/tree_sitter_go/configreach_tree_sitter_go.py examples/plugins/feature_flags_provider/configreach_feature_flags.py
       - run: pytest
       - run: configreach scan examples/basic --format json --output /tmp/configreach-report.json --no-cache
       - run: configreach scan examples/polyglot --format sarif --output /tmp/configreach.sarif --no-cache
