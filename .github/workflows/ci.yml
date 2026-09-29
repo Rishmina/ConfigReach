@@ -25,4 +25,6 @@ jobs:
       - run: configreach scan examples/polyglot --format html --output /tmp/configreach.html --no-cache
       - run: configreach scan examples/frameworks --format json --output /tmp/configreach-frameworks.json --no-cache
       - run: configreach plan examples/combinations --format json --output /tmp/configreach-plan.json --no-cache
+      - run: configreach plan examples/combinations --fixture pytest --output /tmp/configreach-fixtures.py --no-cache
+      - run: configreach workspace . --format json --output /tmp/configreach-workspaces.json --no-cache
       - run: configreach doctor examples/polyglot
