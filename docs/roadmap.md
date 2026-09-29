@@ -49,13 +49,22 @@
 - Deterministic fixture exporters for pytest, Jest/TypeScript, Go and shell harnesses.
 - Cross-version regression coverage for workspace cache invalidation and fixture generation.
 
-## v0.7 — optional ecosystem adapters
-- Optional parser-backed external adapters while keeping the core dependency-free.
-- More framework-specific validator/domain adapters contributed through the stable plugin entry-point surface.
-- Additional fixture exporters where a deterministic mapping is possible without inventing assertions.
+## v0.7 — adapter ecosystem and reproducibility ✅
+- Adapter API v1 with explicit compatibility version, parser identity, determinism declaration and capability metadata.
+- `configreach adapters` machine-readable diagnostics for built-ins and installed plugins.
+- Optional parser-backed tree-sitter JavaScript adapter example kept outside the zero-dependency core.
+- `configreach reproduce` canonical SHA-256 verification across repeated uncached scans.
+- Cross-platform reproducibility workflow comparing Ubuntu, macOS and Windows canonical digests.
+- Versioned built-in adapter capability schema.
+
+## v0.8 — stabilization
+- Broader third-party adapter examples and compatibility fixtures.
+- Additional deterministic fixture exporters where assertion-free mappings are useful.
+- Report/workspace/planning schema compatibility fixtures and migration notes.
+- Performance budgets for large polyglot monorepos.
 
 ## v1.0
 - Stable report, workspace and planning schemas.
-- Stable plugin contract.
-- Versioned adapter capability matrix.
-- Reproducibility suite across operating systems and supported Python versions.
+- Stable plugin contract based on adapter API v1 feedback.
+- Versioned adapter capability matrix with compatibility policy.
+- Reproducibility suite across operating systems and supported Python versions as a release gate.
