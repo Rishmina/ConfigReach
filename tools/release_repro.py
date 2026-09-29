@@ -6,59 +6,25 @@ therefore does not add a runtime dependency.
 from __future__ import annotations
 
 import argparse
-import copy
-import gzip
 import json
 import os
 import shutil
 import subprocess
 import sys
-import tarfile
 import tempfile
 from pathlib import Path
 
-from configreach.release import build_release_manifest, compare_release_manifests
+from configreach.release import (
+    build_release_manifest,
+    compare_release_manifests,
+    normalize_sdist,
+)
 
 
 def _clean_generated(root: Path) -> None:
     shutil.rmtree(root / "build", ignore_errors=True)
     for path in (root / "src").glob("*.egg-info"):
         shutil.rmtree(path, ignore_errors=True)
-
-
-def _normalize_sdist(path: Path, epoch: int) -> None:
-    """Repack an sdist with deterministic gzip/tar container metadata.
-
-    Setuptools produces deterministic file contents here, but tar/gzip metadata may carry
-    wall-clock timestamps or host ownership. Normalizing only the archive container keeps
-    the package contents unchanged while making the publishable .tar.gz byte-reproducible.
-    """
-    temporary = path.with_name(path.name + ".normalized")
-    with tarfile.open(path, "r:gz") as source, temporary.open("wb") as raw:
-        with gzip.GzipFile(
-            filename="",
-            mode="wb",
-            fileobj=raw,
-            compresslevel=9,
-            mtime=epoch,
-        ) as compressed:
-            with tarfile.open(fileobj=compressed, mode="w|", format=tarfile.PAX_FORMAT) as target:
-                for member in sorted(source.getmembers(), key=lambda item: item.name):
-                    normalized = copy.copy(member)
-                    normalized.mtime = epoch
-                    normalized.uid = 0
-                    normalized.gid = 0
-                    normalized.uname = ""
-                    normalized.gname = ""
-                    normalized.pax_headers = {}
-                    if member.isfile():
-                        handle = source.extractfile(member)
-                        if handle is None:
-                            raise ValueError(f"could not read sdist member: {member.name}")
-                        target.addfile(normalized, handle)
-                    else:
-                        target.addfile(normalized)
-    temporary.replace(path)
 
 
 def _build(root: Path, output: Path, env: dict[str, str]) -> None:
@@ -82,7 +48,7 @@ def _build(root: Path, output: Path, env: dict[str, str]) -> None:
     )
     epoch = int(env["SOURCE_DATE_EPOCH"])
     for sdist in sorted(output.glob("*.tar.gz"), key=lambda item: item.name):
-        _normalize_sdist(sdist, epoch)
+        normalize_sdist(sdist, epoch)
 
 
 def main() -> int:
