@@ -1,0 +1,167 @@
+name: Bootstrap ConfigReach Discussions
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  discussions: write
+  issues: write
+
+jobs:
+  bootstrap:
+    if: github.event_name == 'workflow_dispatch' || github.event.issue.title == '[ConfigReach bootstrap discussions]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create starter discussions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          OWNER="${REPOSITORY%%/*}"
+          NAME="${REPOSITORY#*/}"
+
+          QUERY='query($owner:String!,$name:String!){repository(owner:$owner,name:$name){id discussionCategories(first:50){nodes{id name}} discussions(first:100){nodes{title url}}}}'
+          DATA="$(gh api graphql -f query="$QUERY" -f owner="$OWNER" -f name="$NAME")"
+          REPO_ID="$(jq -r '.data.repository.id' <<<"$DATA")"
+
+          if [[ -z "$REPO_ID" || "$REPO_ID" == "null" ]]; then
+            echo "Could not resolve repository GraphQL ID"
+            exit 1
+          fi
+
+          category_id() {
+            local preferred="$1"
+            local id
+            id="$(jq -r --arg n "$preferred" '.data.repository.discussionCategories.nodes[] | select(.name==$n) | .id' <<<"$DATA" | head -n1)"
+            if [[ -z "$id" ]]; then
+              id="$(jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="General") | .id' <<<"$DATA" | head -n1)"
+            fi
+            if [[ -z "$id" ]]; then
+              id="$(jq -r '.data.repository.discussionCategories.nodes[0].id // empty' <<<"$DATA")"
+            fi
+            printf '%s' "$id"
+          }
+
+          discussion_exists() {
+            local title="$1"
+            jq -e --arg t "$title" '.data.repository.discussions.nodes[]? | select(.title==$t)' <<<"$DATA" >/dev/null
+          }
+
+          create_discussion() {
+            local preferred_category="$1"
+            local title="$2"
+            local body="$3"
+            local cat
+            cat="$(category_id "$preferred_category")"
+
+            if discussion_exists "$title"; then
+              echo "Already exists: $title"
+              return 0
+            fi
+
+            if [[ -z "$cat" ]]; then
+              echo "No Discussion category is available"
+              exit 1
+            fi
+
+            MUTATION='mutation($repo:ID!,$cat:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repo,categoryId:$cat,title:$title,body:$body}){discussion{url title}}}'
+            gh api graphql \
+              -f query="$MUTATION" \
+              -f repo="$REPO_ID" \
+              -f cat="$cat" \
+              -f title="$title" \
+              -f body="$body" \
+              --jq '.data.createDiscussion.discussion | "Created: \(.title) — \(.url)"'
+          }
+
+          BODY1=$(cat <<'EOF'
+          Code coverage tells us whether code executed, but it does not tell us whether the configuration states that can change application behavior were actually exercised.
+
+          ConfigReach is exploring **configuration coverage** across environment variables, feature flags, CLI options, configuration files, deployment parameters, known values, branches and important combinations.
+
+          I would like community input on what a trustworthy configuration-coverage signal should answer before teams use it in CI.
+
+          Some possibilities:
+
+          - Which configuration keys have test evidence?
+          - Which known values or boolean states are exercised?
+          - Which defaults are never overridden by tests?
+          - Which configuration-dependent branches have explicit evidence?
+          - Which important key/value combinations are still untested?
+          - How should unknown or open-ended configuration domains be represented?
+          - What evidence should be required before calling something "covered"?
+
+          ConfigReach intentionally uses observable, deterministic evidence rather than an opaque AI-generated score.
+
+          **Question:** What would *configuration coverage* need to mean for you to trust it on a real repository?
+          EOF
+          )
+
+          BODY2=$(cat <<'EOF'
+          ConfigReach already recognizes a broad set of configuration sources and ecosystems, including environment-variable reads, feature flags, CLI options, YAML/JSON/TOML/INI/properties files, Docker, Docker Compose, Kubernetes-style declarations, Helm values, GitHub Actions variables, Terraform variables and several language/framework adapters.
+
+          I would like to prioritize the next integrations based on real developer demand rather than adding adapters just to increase the feature list.
+
+          Candidates include:
+
+          - AWS Systems Manager Parameter Store / Secrets Manager patterns
+          - HashiCorp Vault
+          - Consul
+          - Azure App Configuration / Key Vault patterns
+          - GCP Secret Manager / runtime configuration patterns
+          - GitLab CI variables
+          - Kubernetes CRDs and operator configuration
+          - additional Spring / .NET configuration conventions
+          - additional feature-flag SDKs
+          - framework-specific configuration systems not covered today
+
+          **Which ecosystem should ConfigReach support next, and what concrete configuration pattern should it recognize?**
+
+          Code examples or links to representative open-source repositories are especially useful because they can become deterministic fixtures and validation cases.
+          EOF
+          )
+
+          BODY3=$(cat <<'EOF'
+          One of the best ways to improve ConfigReach is to run it against real repositories and compare its findings with what maintainers already know about their configuration surface.
+
+          If you try ConfigReach, share something interesting it finds — especially:
+
+          - an environment variable that is read but never exercised by tests
+          - a feature flag tested in only one state
+          - a configuration default that tests never override
+          - a production-like value with no explicit test evidence
+          - a useful configuration combination that is missing
+          - a false positive or false negative that ConfigReach should learn to handle deterministically
+
+          A minimal report is enough:
+
+          ```text
+          Project / stack:
+          ConfigReach version:
+          Interesting key or finding:
+          Why it surprised you:
+          Expected behavior (if ConfigReach got it wrong):
+          ```
+
+          Please do not post secrets or sensitive runtime values. ConfigReach is designed to reason about configuration structure and evidence without requiring secret disclosure.
+
+          **What is the most surprising configuration gap ConfigReach found in your project?**
+          EOF
+          )
+
+          create_discussion "General" "What should configuration coverage mean to developers?" "$BODY1"
+          create_discussion "Ideas" "Which configuration ecosystem should ConfigReach support next?" "$BODY2"
+          create_discussion "Show and tell" "Run ConfigReach on your project and share the most surprising configuration gap" "$BODY3"
+
+      - name: Close bootstrap trigger issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: gh issue close "$ISSUE_URL" --comment "Starter ConfigReach Discussions bootstrap completed."
