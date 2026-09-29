@@ -1,0 +1,46 @@
+name: Publish ConfigReach to Hugging Face
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/**
+      - huggingface-space/**
+      - .github/workflows/publish-huggingface.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: huggingface-space
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Hugging Face CLI
+        run: |
+          curl -LsSf https://hf.co/cli/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Prepare static Space
+        run: |
+          rm -rf .hf-space
+          mkdir -p .hf-space
+          cp huggingface-space/README.md .hf-space/README.md
+          cp docs/index.html .hf-space/index.html
+
+      - name: Publish Space with OIDC
+        env:
+          HF_OIDC_RESOURCE: spaces/sauravsingla08/ConfigReach
+        run: |
+          hf upload sauravsingla08/ConfigReach .hf-space . \
+            --repo-type space \
+            --delete="*" \
+            --commit-message="Sync ConfigReach from GitHub ${GITHUB_SHA::7}"
