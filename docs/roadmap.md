@@ -65,14 +65,17 @@
 - Full-engine synthetic polyglot performance budget with a dedicated GitHub-hosted CPU workflow.
 - Explicit migration/compatibility guidance for downstream consumers.
 
-## v0.9 — release hardening
-- Packaging/release reproducibility checks for wheel and source distributions.
-- More optional third-party adapter examples using Adapter API v1.
-- Additional compatibility fixtures from real-world polyglot repositories.
-- Performance history artifacts for large monorepo scenarios.
+## v0.9 — release hardening ✅
+- Wheel and source-distribution reproducibility harness with exact SHA-256 and canonical archive-content comparison.
+- `configreach release` manifests for independently inspecting built artifacts.
+- Dedicated release workflow that builds twice, verifies reproducibility, installs the produced wheel and smoke-scans a fixture.
+- Additional Adapter API v1 examples: parser-backed tree-sitter Go plus a custom `.featureflags` configuration provider.
+- Offline compatibility corpus covering Python/env, polyglot deployment, Spring/.NET and JSON-Schema-style configuration surfaces.
+- Provenance-rich performance history artifacts retained from GitHub-hosted CPU budget runs.
 
 ## v1.0
 - Stable report, workspace and planning schemas.
 - Stable plugin contract based on adapter API v1 feedback.
 - Versioned adapter capability matrix with compatibility policy.
-- Reproducibility and performance suites as release gates across supported Python versions and operating systems.
+- Reproducibility, release-artifact and performance suites as required release gates.
+- Formal deprecation policy for machine-readable schemas and Adapter API changes.
