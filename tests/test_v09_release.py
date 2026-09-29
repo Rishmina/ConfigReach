@@ -21,16 +21,16 @@ def _write_wheel(path: Path, *, year: int) -> None:
         info = zipfile.ZipInfo("configreach/module.py", date_time=(year, 1, 1, 0, 0, 0))
         archive.writestr(info, b"VALUE = 1\n")
         metadata = zipfile.ZipInfo(
-            "configreach-0.9.0.dist-info/METADATA", date_time=(year, 1, 1, 0, 0, 0)
+            f"configreach-{__version__}.dist-info/METADATA", date_time=(year, 1, 1, 0, 0, 0)
         )
-        archive.writestr(metadata, b"Name: configreach\nVersion: 0.9.0\n")
+        archive.writestr(metadata, f"Name: configreach\nVersion: {__version__}\n".encode())
 
 
 def _write_sdist(path: Path, *, gzip_mtime: int, member_mtime: int = 123) -> None:
     payload = io.BytesIO()
     with tarfile.open(fileobj=payload, mode="w") as archive:
         data = b"VALUE = 1\n"
-        info = tarfile.TarInfo("configreach-0.9.0/src/configreach/module.py")
+        info = tarfile.TarInfo(f"configreach-{__version__}/src/configreach/module.py")
         info.size = len(data)
         info.mtime = member_mtime
         info.uid = member_mtime % 100
@@ -78,8 +78,8 @@ def test_release_manifest_and_comparison(tmp_path: Path) -> None:
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
-    wheel_name = "configreach-0.9.0-py3-none-any.whl"
-    sdist_name = "configreach-0.9.0.tar.gz"
+    wheel_name = f"configreach-{__version__}-py3-none-any.whl"
+    sdist_name = f"configreach-{__version__}.tar.gz"
     _write_wheel(first / wheel_name, year=2024)
     _write_wheel(second / wheel_name, year=2026)
     _write_sdist(first / sdist_name, gzip_mtime=100)
@@ -90,7 +90,7 @@ def test_release_manifest_and_comparison(tmp_path: Path) -> None:
     result = compare_release_manifests(left, right)
 
     assert RELEASE_MANIFEST_SCHEMA_VERSION == 1
-    assert left.version == __version__ == "0.9.0"
+    assert left.version == __version__
     assert {item.kind for item in left.artifacts} == {"wheel", "sdist"}
     assert result.exact_reproducible is False
     assert result.content_reproducible is True
