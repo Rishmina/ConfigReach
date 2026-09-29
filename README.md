@@ -30,13 +30,33 @@ else:
 
 A suite can execute that block every time and still never test `PAYMENT_MODE=live`. ConfigReach inventories configuration reads and declarations, maps them to test evidence, tracks known values and branches, measures configuration combinations, and reports the gaps.
 
+## Problems developers actually search for
+
+Different teams describe configuration-coverage gaps in different ways. ConfigReach is designed to answer questions behind searches like these:
+
+- **environment variable test coverage** — Which environment variables and known values are actually exercised by tests? Run `configreach coverage .`.
+- **feature flag test coverage** — Are enabled/disabled states and known feature-flag values covered? Run `configreach matrix .`.
+- **configuration testing** — Which configuration branches, defaults and expected values have test evidence? Run `configreach scan .`.
+- **config coverage** — What percentage of discovered configuration inputs have detected test or runtime evidence? Run `configreach coverage .`.
+- **test environment variables** — Where is a key such as `PAYMENT_MODE` read, declared, defaulted and tested? Run `configreach explain PAYMENT_MODE .`.
+- **Kubernetes configuration testing** — Which Kubernetes-style environment declarations map to application configuration reads, and which lack test evidence? Run `configreach scan .`. ConfigReach performs static repository analysis; it does not claim to validate live-cluster behavior.
+
 ## Quick start
+
+Install the CLI from PyPI and scan a repository:
+
+```bash
+python -m pip install configreach
+configreach scan .
+configreach coverage .
+```
+
+For development from source:
 
 ```bash
 git clone https://github.com/sauravsingla/ConfigReach.git
 cd ConfigReach
 python -m pip install -e .
-configreach scan .
 ```
 
 Useful examples:
