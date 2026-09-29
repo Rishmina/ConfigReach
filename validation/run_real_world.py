@@ -12,6 +12,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
+from configreach import __version__
 from configreach.engine import scan
 
 
@@ -30,6 +31,17 @@ def _git(*args: str, cwd: Path | None = None) -> str:
     if proc.returncode:
         raise RuntimeError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
     return proc.stdout.strip()
+
+
+def _source_revision() -> str:
+    proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else "unknown"
 
 
 def _clone_pinned(repo: str, commit: str, destination: Path) -> None:
@@ -101,6 +113,8 @@ def _markdown(data: dict) -> str:
         "Runtime is wall-clock scan time on the recorded runner and is therefore performance evidence, not a cross-machine guarantee.",
         "Manual false-positive/false-negative entries are targeted spot checks, not exhaustive repository-wide error rates; measured accuracy comes from the hand-labelled corpus.",
         "",
+        f"Tool: ConfigReach `{data['tool']['version']}` at source revision `{data['tool']['source_revision']}`.",
+        "",
         "| Project | Ecosystem | Configs | Covered | Coverage | Runtime | Reviewed FP | Reviewed FN |",
         "|---|---|---:|---:|---:|---:|---:|---:|",
     ]
@@ -121,6 +135,7 @@ def _markdown(data: dict) -> str:
         f"- Inputs with detected test/runtime evidence: **{totals['covered_inputs']}**",
         f"- Aggregate key coverage: **{totals['configuration_coverage'] * 100:.1f}%**",
         f"- Total scan wall time: **{totals['runtime_seconds']:.3f}s**",
+        f"- Projects with manual spot checks: **{totals['projects_with_manual_review']}**",
         f"- Manually reviewed false-positive examples: **{totals['reviewed_false_positives']}**",
         f"- Manually reviewed false-negative examples: **{totals['reviewed_false_negatives']}**",
         "",
@@ -135,10 +150,14 @@ def _markdown(data: dict) -> str:
         any_review = True
         rows.append(f"### {item['repo']}")
         rows.append("")
+        rows.append(f"Review scope: {review['scope']}")
+        rows.append("")
         for fp in review["false_positives"]:
-            rows.append(f"- **FP** `{fp.get('key', fp.get('pattern', '?'))}` — {fp['reason']}")
+            source = f" ({fp['source']})" if fp.get("source") else ""
+            rows.append(f"- **FP** `{fp.get('key', fp.get('pattern', '?'))}`{source} — {fp['reason']}")
         for fn in review["false_negatives"]:
-            rows.append(f"- **FN** `{fn.get('key', fn.get('pattern', '?'))}` — {fn['reason']}")
+            source = f" ({fn['source']})" if fn.get("source") else ""
+            rows.append(f"- **FN** `{fn.get('key', fn.get('pattern', '?'))}`{source} — {fn['reason']}")
         rows.append("")
     if not any_review:
         rows.append("No manual spot-check annotations were supplied for this run.")
@@ -182,6 +201,11 @@ def main() -> int:
     covered_total = sum(item["covered_inputs"] for item in projects)
     output = {
         "schema_version": 1,
+        "tool": {
+            "name": "ConfigReach",
+            "version": __version__,
+            "source_revision": _source_revision(),
+        },
         "methodology": {
             "static_only": True,
             "target_code_executed": False,
@@ -201,6 +225,7 @@ def main() -> int:
             "covered_inputs": covered_total,
             "configuration_coverage": round(covered_total / config_total, 6) if config_total else 1.0,
             "runtime_seconds": round(sum(item["runtime_seconds"] for item in projects), 6),
+            "projects_with_manual_review": sum(1 for item in projects if item["manual_review"]["scope"] != "not-yet-reviewed"),
             "reviewed_false_positives": sum(item["manual_review"]["false_positive_count"] for item in projects),
             "reviewed_false_negatives": sum(item["manual_review"]["false_negative_count"] for item in projects),
         },
