@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-29",
+  "method": "Each repository is fetched at the exact commit below. ConfigReach performs static analysis only; target code and dependencies are not executed.",
+  "projects": [
+    {"repo": "pallets/flask", "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35", "ecosystem": "Python"},
+    {"repo": "django/django", "commit": "9332b163a67eabe5bdbf8066b1c5da394be9aa9c", "ecosystem": "Python"},
+    {"repo": "pydantic/pydantic", "commit": "bb6da4cfbb1f559885ea2fa207ec93853bfeac64", "ecosystem": "Python"},
+    {"repo": "encode/httpx", "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254", "ecosystem": "Python"},
+    {"repo": "expressjs/express", "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7", "ecosystem": "JavaScript"},
+    {"repo": "axios/axios", "commit": "2426e03ba9020be31ed013873423cea6b7cd2e67", "ecosystem": "JavaScript"},
+    {"repo": "gin-gonic/gin", "commit": "1bd0ecf2d3e08da37efa270bb7be20c1eddb0d68", "ecosystem": "Go"},
+    {"repo": "helm/helm", "commit": "8107b7604268a1753776c111457255cface0db83", "ecosystem": "Go"},
+    {"repo": "spring-projects/spring-petclinic", "commit": "f3c74834e31079f69855e9c9eddb34fceb40a8d9", "ecosystem": "Java/Spring"},
+    {"repo": "hashicorp/terraform", "commit": "50ffbe06bd26cb5b4d2016e47b51b43aea74a8b0", "ecosystem": "Go/Terraform"}
+  ]
+}
