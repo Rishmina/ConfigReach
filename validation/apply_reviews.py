@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+# When executed as `python validation/apply_reviews.py`, Python puts the
+# validation directory rather than the repository root on sys.path. Add the
+# root explicitly so the sibling validation module can be imported without
+# turning validation/ into an installed package.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from configreach import __version__
 from validation.run_real_world import _markdown
