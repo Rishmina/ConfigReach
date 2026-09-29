@@ -1,0 +1,25 @@
+name: ConfigReach
+description: Deterministic configuration coverage for your repository
+inputs:
+  path:
+    description: Repository path to scan
+    required: false
+    default: .
+  fail-under:
+    description: Minimum configuration coverage percentage
+    required: false
+    default: "0"
+  format:
+    description: Output format (text, json, markdown, sarif)
+    required: false
+    default: markdown
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: python -m pip install "${{ github.action_path }}"
+    - shell: bash
+      run: configreach scan "${{ inputs.path }}" --format "${{ inputs.format }}" --fail-under "${{ inputs.fail-under }}"
+branding:
+  icon: activity
+  color: blue

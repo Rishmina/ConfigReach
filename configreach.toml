@@ -1,0 +1,3 @@
+[configreach]
+fail_under = 0
+ignore = ["examples/generated/**"]
