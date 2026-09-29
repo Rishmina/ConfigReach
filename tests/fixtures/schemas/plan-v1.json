@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "strength": 2,
+  "summary": {
+    "cases": 1,
+    "scopes_considered": 1,
+    "interactions_total": 4,
+    "interactions_already_covered": 2,
+    "interactions_planned": 1,
+    "interactions_remaining": 1,
+    "missing_value_inputs": 1
+  },
+  "missing_values": {
+    "PAYMENT_MODE": ["live"]
+  },
+  "cases": [
+    {
+      "id": "CRP001",
+      "scope": "app.py::handle",
+      "configuration": {
+        "PAYMENT_MODE": "live"
+      },
+      "covers": ["PAYMENT_MODE=live"]
+    }
+  ],
+  "warnings": []
+}
