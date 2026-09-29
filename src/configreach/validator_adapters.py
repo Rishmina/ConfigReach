@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 
 from .models import ConfigKey, Location, is_sensitive
@@ -15,7 +14,7 @@ def _safe_value(name: str, value: object) -> str:
 
 def record_zod(text: str, rel: str, keys: dict[str, ConfigKey]) -> None:
     """Extract finite domains and validators from common one-line Zod object fields."""
-    field = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(z\.[^,]+),?\s*$")
+    field = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(z\..*?)(?:,\s*)?$")
     enum = re.compile(r"z\.enum\(\s*\[([^\]]*)\]")
     literal = re.compile(r"z\.literal\(\s*(['\"])(.*?)\1\s*\)")
     default = re.compile(r"\.default\(\s*(['\"])(.*?)\1\s*\)")
