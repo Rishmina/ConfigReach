@@ -26,9 +26,7 @@ else:
     simulate_charge()
 ```
 
-A test suite can execute this code every time and still never exercise `PAYMENT_MODE=live`.
-
-ConfigReach inventories configuration reads and declarations, maps them to test evidence, tracks known values and configuration-dependent branches, and reports missing keys, missing values, risky defaults, pairwise gaps and PR configuration deltas.
+A suite can execute that block every time and still never test `PAYMENT_MODE=live`. ConfigReach inventories configuration reads and declarations, maps them to test evidence, tracks known values and branches, measures configuration combinations, and reports the gaps.
 
 ## Quick start
 
@@ -39,22 +37,17 @@ python -m pip install -e .
 configreach scan .
 ```
 
-Try the polyglot example:
+Useful examples:
 
 ```bash
 configreach scan examples/polyglot
 configreach explain PAYMENT_MODE examples/polyglot
 configreach matrix examples/polyglot
 configreach scan examples/polyglot --format html --output configreach.html
+configreach plan examples/combinations --format markdown
+configreach plan examples/combinations --fixture pytest --output configreach_cases.py
+configreach workspace . --format json --output configreach-workspaces.json
 ```
-
-The combination fixture demonstrates why key coverage alone is insufficient:
-
-```bash
-configreach scan examples/combinations --no-cache
-```
-
-Its tests touch every discovered key and every individual known value, so key/value coverage can be 100%, while only **2 of 4 known pairwise value states** are exercised. ConfigReach reports that pairwise value-state coverage separately.
 
 ## Observable metrics — no opaque AI score
 
@@ -62,12 +55,13 @@ ConfigReach reports evidence-based metrics independently:
 
 - **Key coverage** — discovered configuration inputs with detected test/runtime evidence.
 - **Value coverage** — explicitly tested values / explicitly known values.
-- **Boolean coverage** — tested `true`/`false` states where a boolean domain can be established.
+- **Boolean coverage** — tested `true`/`false` states where a boolean domain is known.
 - **Enum coverage** — exercised known discrete values for non-boolean finite domains.
-- **Branch-state coverage** — known values used in configuration-dependent branches that have explicit test-value evidence.
-- **Pairwise key coverage** — interacting keys read in the same dependency scope (Python function scope when available; file scope for conservative adapters) that receive joint test evidence.
-- **Pairwise value-state coverage** — known value combinations for interacting keys observed together in the same detected test scenario.
-- **Blast radius** — distinct files and top-level modules that read a configuration key.
+- **Branch-state coverage** — configuration-dependent branch states with explicit test-value evidence.
+- **Pairwise key coverage** — interacting keys receiving joint test evidence.
+- **Pairwise value-state coverage** — known value combinations observed together in the same detected test scenario.
+- **Blast radius** — files and top-level modules reading a configuration key.
+- **Workspace coverage** — weighted configuration coverage across independently cached monorepo workspaces.
 
 Unknown domains remain unknown. ConfigReach never asks a model whether something is “probably covered.” See [docs/metrics.md](docs/metrics.md).
 
@@ -78,22 +72,23 @@ Unknown domains remain unknown. ConfigReach never asks a model whether something
 | Ecosystem | Examples | Current analysis |
 |---|---|---|
 | Python | `os.getenv`, `os.environ[...]`, `os.environ.get`, `setdefault` | AST-backed |
-| Pydantic Settings | `BaseSettings`, aliases, `Literal`, Enum, bool domains | AST-backed |
+| Pydantic Settings | `BaseSettings`, aliases, `Literal`, Enum, bool domains, Field validators | AST-backed |
 | Python CLI | `argparse`, common Click/Typer option forms | AST-backed/conservative |
-| Feature flags | `is_enabled`, `feature_enabled`, LaunchDarkly-style `variation` | AST + conservative patterns |
-| JavaScript / TypeScript | `process.env.KEY`, `process.env["KEY"]`, selected Deno/Bun forms | deterministic pattern adapter |
-| Go | `os.Getenv`, `os.LookupEnv` | deterministic pattern adapter |
-| Java | `System.getenv`, `System.getProperty` | deterministic pattern adapter |
+| Feature flags | `is_enabled`, `feature_enabled`, LaunchDarkly-style variation calls | AST + deterministic patterns |
+| JavaScript / TypeScript | `process.env`, Deno/Bun environment access, function-scoped comparisons | deterministic semantic adapter |
+| Zod | `z.enum`, `z.boolean`, `z.literal`, min/max/regex/url/email/nonempty | deterministic validator adapter |
+| Go | `os.Getenv`, `os.LookupEnv`, `t.Setenv`, function-scoped comparisons | deterministic semantic adapter |
+| Java / Spring | `System.getenv`, `System.getProperty`, `@Value`, `Environment.getProperty`, `@ConfigurationProperties` | deterministic semantic adapter |
+| Java Bean Validation | `@Min`, `@Max`, `@Size`, `@Pattern`, null/blank/sign constraints on `@Value` fields | deterministic validator adapter |
+| .NET / C# | environment variables, `IConfiguration`, `GetValue`, feature flags | deterministic semantic adapter |
 | Rust | `env::var`, `env::var_os` | deterministic pattern adapter |
 | Ruby | `ENV[...]`, `ENV.fetch(...)` | deterministic pattern adapter |
 | PHP | `getenv(...)`, common `env(...)` | deterministic pattern adapter |
 | Shell | `$VAR`, `${VAR}` | deterministic pattern adapter |
 
-### Declarations and deployment sources
+### Declarations, schemas and deployment sources
 
-ConfigReach recognizes `.env.example`, `.env.template`, other `.env*` templates, JSON, TOML, INI/CFG, Java properties, YAML environment declarations, Dockerfiles/Containerfiles, Docker Compose environment blocks, Kubernetes-style environment declarations, Helm `values.yaml`, GitHub Actions `${{ vars.* }}` and `${{ secrets.* }}`, Terraform variables, Makefile variables, Pydantic settings fields and CLI options.
-
-Python currently receives the deepest semantic treatment. Other ecosystems use conservative deterministic adapters and can be extended through the plugin SDK without adding runtime dependencies to the core.
+ConfigReach recognizes `.env.example`, `.env.template`, `.env*` templates, JSON, TOML, INI/CFG, Java properties, YAML environment declarations, Dockerfiles/Containerfiles, Docker Compose, Kubernetes-style environment declarations, Helm `values.yaml`, GitHub Actions `${{ vars.* }}` and `${{ secrets.* }}`, Terraform variables, Makefile variables, Pydantic settings, JSON Schema finite domains/validators, Zod schemas and CLI options.
 
 ## Commands
 
@@ -102,6 +97,10 @@ configreach scan [PATH]
 configreach coverage [PATH]
 configreach explain KEY [PATH]
 configreach matrix [PATH]
+configreach plan [PATH]
+configreach plan [PATH] --strength 3 --max-cases 40
+configreach plan [PATH] --fixture pytest|jest|go|shell
+configreach workspace [PATH]
 configreach diff origin/main...HEAD [PATH]
 configreach pr-comment origin/main...HEAD [PATH]
 configreach doctor [PATH]
@@ -113,6 +112,42 @@ configreach cache clear [PATH]
 configreach init [PATH]
 configreach trace --path . -- pytest -q
 ```
+
+## Deterministic test planning
+
+`configreach plan` converts already-known finite configuration domains into bounded 1-wise, 2-wise or 3-wise suggestions. Existing test scenarios are subtracted first, sensitive-looking keys are excluded, and CPU-safety limits prevent Cartesian-product explosions.
+
+```bash
+configreach plan . --strength 2
+configreach plan . --format json --output configreach-plan.json
+```
+
+The planner does not invent values, execute the application, synthesize assertions or call a model. See [docs/planning.md](docs/planning.md).
+
+## Fixture exporters
+
+Turn the deterministic plan into lightweight scaffolding for your own tests:
+
+```bash
+configreach plan . --fixture pytest --output test_configreach_cases.py
+configreach plan . --fixture jest --output configreach.cases.ts
+configreach plan . --fixture go --output configreach_cases_test.go
+configreach plan . --fixture shell --output configreach_cases.sh
+```
+
+Exporters provide configuration cases only; they deliberately do not invent expected business outcomes. See [docs/fixtures.md](docs/fixtures.md).
+
+## Monorepos and workspace-local incremental caching
+
+`configreach workspace` detects `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, Maven/Gradle manifests and `.csproj` files. Each workspace receives an independent `.configreach/cache/` boundary, so changing one package does not invalidate unrelated warmed workspace caches. Parent workspaces ignore nested workspace directories to avoid double counting.
+
+```bash
+configreach workspace .
+configreach workspace . --format markdown
+configreach workspace . --format json --output workspaces.json
+```
+
+The normal `configreach scan .` remains the combined repository view. See [docs/workspaces.md](docs/workspaces.md).
 
 ## CI gating
 
@@ -127,14 +162,6 @@ configreach scan . --fail-on global-env-overwrite
 
 `--fail-under` gates key coverage. `--fail-on` can gate finding aliases, severities or exact `CRxxx` rule IDs.
 
-## Explain one configuration key
-
-```bash
-configreach explain PAYMENT_MODE .
-```
-
-The explanation includes reads, configuration-dependent branch locations, declarations, tests, known/tested values, validators, runtime observation, function provenance and blast radius.
-
 ## Pull-request configuration diff
 
 ```bash
@@ -142,16 +169,7 @@ configreach diff origin/main...HEAD
 configreach pr-comment origin/main...HEAD --output /tmp/configreach-comment.md
 ```
 
-ConfigReach resolves the local Git merge base, scans both the base snapshot and current tree, and reports:
-
-- newly introduced configuration inputs,
-- removed inputs,
-- changed defaults/value/branch domains,
-- newly introduced untested configuration,
-- newly introduced values without test-value evidence,
-- changed configuration files/modules and blast radius.
-
-The analyzer uses only local Git data. It does not call GitHub or any external service. The optional workflow layer can post the generated Markdown as a PR comment.
+ConfigReach resolves the local Git merge base, scans the base snapshot and current tree, and reports new/removed keys, changed domains/defaults, newly introduced untested configuration, new values without test evidence, changed-line configuration impact and blast radius. No external service is required.
 
 ## Searchable static HTML report
 
@@ -159,28 +177,17 @@ The analyzer uses only local Git data. It does not call GitHub or any external s
 configreach scan . --format html --output configreach.html
 ```
 
-The report is a single self-contained HTML file with no CDN or network dependency. It includes key/value/branch/combination metrics, a searchable configuration matrix, and links from configuration nodes to read, branch, declaration and test locations.
+The report is a single self-contained HTML file with no CDN/network dependency and includes searchable key/value/branch/combination evidence plus source links.
 
-## Baselines
-
-Adopt ConfigReach without failing new PRs on every historical gap:
+## Baselines and cache
 
 ```bash
 configreach baseline create .
-```
-
-Baseline keys remain visible but are excluded from CI key-coverage gating. Newly discovered keys are never silently appended to the baseline. See [docs/baselines.md](docs/baselines.md).
-
-## Persistent cache
-
-Caching is enabled by default under `.configreach/cache/` and invalidates when eligible repository metadata or ConfigReach configuration changes.
-
-```bash
 configreach scan . --no-cache
 configreach cache clear .
 ```
 
-Cache/timing state is deliberately excluded from JSON/SARIF result semantics. Cache/report schemas are versioned so semantic-model changes invalidate stale cached data.
+Baseline keys remain visible but are excluded from CI key-coverage gating. Cache/timing state is excluded from JSON/SARIF result semantics. See [docs/baselines.md](docs/baselines.md).
 
 ## Optional lightweight runtime tracing
 
@@ -189,23 +196,23 @@ configreach trace -- pytest -q
 configreach scan .
 ```
 
-Tracing is explicit opt-in. The Python tracer records configuration key names plus short SHA-256-derived value fingerprints to `.configreach/trace.jsonl`; it does not persist raw runtime values. Static analysis is fully usable without tracing.
+Tracing is explicit opt-in. The Python tracer records key names plus short SHA-256-derived value fingerprints; it does not persist raw runtime values.
 
 ## Deterministic findings
 
 | Rule | Meaning | Default severity |
 |---|---|---|
-| `CR001` | discovered configuration has no detected test/runtime evidence | warning |
-| `CR002` | configuration read by application code but not declared in a recognized source | warning |
-| `CR003` | configuration declared but not read by recognized application code | note |
-| `CR004` | known configuration values are not all exercised | warning |
+| `CR001` | configuration has no detected test/runtime evidence | warning |
+| `CR002` | application read without a recognized declaration | warning |
+| `CR003` | declaration without a recognized application read | note |
+| `CR004` | known values are not all exercised | warning |
 | `CR005` | sensitive-looking configuration has a non-empty static default | error |
 | `CR006` | likely inconsistent names normalize to the same identifier | warning |
-| `CR007` | production-like known value (`live`, `prod`, etc.) is not exercised | warning |
-| `CR008` | explicit test values only exercise defaults while known alternatives exist | warning |
-| `CR009` | a test mutates the global environment in a way that may leak configuration state | warning |
+| `CR007` | production-like known value is not exercised | warning |
+| `CR008` | explicit test values only exercise defaults | warning |
+| `CR009` | a test mutates the global environment in a potentially leaky way | warning |
 
-These are deterministic heuristics, not semantic certainty claims. Every finding retains source provenance.
+Every finding retains source provenance.
 
 ## GitHub Actions
 
@@ -228,53 +235,22 @@ jobs:
           fail-on: error
 ```
 
-Markdown output is appended to the GitHub job summary. SARIF can be uploaded with GitHub Code Scanning. An optional PR-comment workflow is included at [`.github/workflows/configreach-pr.yml`](.github/workflows/configreach-pr.yml).
-
-## Configuration
-
-Create a starter configuration:
-
-```bash
-configreach init
-```
-
-```toml
-[configreach]
-fail_under = 60
-fail_on = ["error"]
-ignore = ["vendor/**", "generated/**"]
-test_patterns = ["tests/**", "**/test_*.py", "**/*.spec.ts"]
-baseline = ".configreach/baseline.json"
-trace_file = ".configreach/trace.jsonl"
-cache = true
-plugins = true
-```
-
-## Monorepos
-
-ConfigReach detects package roots from Python, Node, Go, Rust, Maven and Gradle manifests and exposes them in reports. Paths remain repository-relative. Deeper workspace-local incremental invalidation is on the roadmap.
+Markdown output can be appended to the job summary, SARIF can be uploaded to Code Scanning, and the repository includes an optional PR-comment workflow.
 
 ## Plugin SDK
 
-Third-party packages can register deterministic adapters through the `configreach.adapters` Python entry-point group. Plugin failures are isolated as scanner warnings rather than crashing the scan. See [docs/plugin-sdk.md](docs/plugin-sdk.md).
+Third-party packages can register deterministic adapters through the `configreach.adapters` Python entry-point group. Plugin failures become scanner warnings rather than crashing the scan. The core intentionally has zero runtime dependencies. See [docs/plugin-sdk.md](docs/plugin-sdk.md).
 
-## Benchmark
+## Benchmark and testing
 
 ```bash
 python benchmarks/bench_scan.py 1000
-```
-
-The benchmark creates a temporary synthetic repository and measures a cold CPU scan. Results are environment-dependent and intentionally not treated as a quality score.
-
-## Testing
-
-```bash
 python -m pip install -e ".[dev]"
 pytest
 python -m compileall -q src tests
 ```
 
-The suite covers Python AST discovery, multi-language reads, deployment/config sources, Pydantic settings, `Literal`/Enum/bool domains, feature flags, branch provenance, function-scoped dependency analysis, key-pair and value-pair metrics, real two-commit Git PR comparison, baselines, cache round-trips, HTML/SARIF/JSON/Markdown reporters, structured sensitive defaults, deterministic generated inventories and CLI policy behavior.
+The suite covers language/config discovery, deployment sources, validators, Pydantic/feature flags, branch provenance, combination metrics, real Git PR comparison, baselines, cache behavior, workspace-local invalidation, planners, fixture exporters, HTML/SARIF/JSON/Markdown reporters and CLI policies.
 
 ## Design principles
 
@@ -287,15 +263,7 @@ The suite covers Python AST discovery, multi-language reads, deployment/config s
 - Every finding has inspectable source provenance.
 - Machine-readable result semantics are reproducible.
 
-See [architecture](docs/architecture.md), [metrics](docs/metrics.md), [threat model](docs/threat-model.md), [plugin SDK](docs/plugin-sdk.md) and [roadmap](docs/roadmap.md).
-
-## Contributing
-
-Contributions are welcome, especially small reproducible fixtures for language/framework-specific configuration idioms. See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Security and privacy
-
-Static analysis is local, deterministic and network-free. ConfigReach is not a credential validator or replacement for a dedicated secret scanner. See [SECURITY.md](SECURITY.md) and [docs/threat-model.md](docs/threat-model.md).
+See [architecture](docs/architecture.md), [metrics](docs/metrics.md), [planning](docs/planning.md), [workspaces](docs/workspaces.md), [fixture exporters](docs/fixtures.md), [threat model](docs/threat-model.md), [plugin SDK](docs/plugin-sdk.md) and [roadmap](docs/roadmap.md).
 
 ## License
 
