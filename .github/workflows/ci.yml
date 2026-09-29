@@ -24,4 +24,5 @@ jobs:
       - run: configreach scan examples/polyglot --format sarif --output /tmp/configreach.sarif --no-cache
       - run: configreach scan examples/polyglot --format html --output /tmp/configreach.html --no-cache
       - run: configreach scan examples/frameworks --format json --output /tmp/configreach-frameworks.json --no-cache
+      - run: configreach plan examples/combinations --format json --output /tmp/configreach-plan.json --no-cache
       - run: configreach doctor examples/polyglot

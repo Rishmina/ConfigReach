@@ -33,13 +33,23 @@
 - Changed-line PR dependency slicing with file-level fallback only where line provenance is unavailable.
 - Root-level test-name detection for Go, Java, .NET, Python and JS/TS conventions.
 
-## v0.5 — scale and testing guidance
+## v0.5 — deterministic testing guidance ✅
+- `configreach plan` for bounded deterministic 1-wise, 2-wise and 3-wise configuration planning.
+- Greedy covering-array style selection with deterministic lexicographic tie-breaking.
+- Existing test-scenario evidence removed from the required interaction set before planning.
+- CPU-safety bounds for domain size, interaction count and generated case count.
+- Sensitive-looking configuration excluded from suggested assignments.
+- Structured JSON fixture suggestions plus text and Markdown renderers.
+- Single-key missing finite values remain actionable even when no multi-key dependency scope is available.
+
+## v0.6 — scale and ecosystem depth
 - Workspace-local incremental cache invalidation for very large monorepos.
-- Deterministic N-wise combination planning without executing generated tests.
-- Test fixture suggestions exported as structured deterministic data, not generated prose.
-- Richer framework validator-domain extraction and optional parser-backed external adapters.
+- Richer framework validator-domain extraction.
+- Optional parser-backed external adapters while keeping the core dependency-free.
+- Additional deterministic fixture exporters for popular test frameworks.
 
 ## v1.0
-- Stable report schema and plugin contract.
+- Stable report and planning schemas.
+- Stable plugin contract.
 - Versioned adapter capability matrix.
 - Reproducibility suite across operating systems and supported Python versions.
