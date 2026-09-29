@@ -139,15 +139,18 @@ def _markdown(data: dict) -> str:
         f"- Manually reviewed false-positive examples: **{totals['reviewed_false_positives']}**",
         f"- Manually reviewed false-negative examples: **{totals['reviewed_false_negatives']}**",
         "",
-        "## Manual review examples",
+        "## Manual review evidence",
         "",
     ]
-    any_review = False
+    reviewed_scopes = []
+    error_examples = False
     for item in data["projects"]:
         review = item["manual_review"]
+        if review["scope"] != "not-yet-reviewed":
+            reviewed_scopes.append((item["repo"], review["scope"]))
         if not review["false_positives"] and not review["false_negatives"]:
             continue
-        any_review = True
+        error_examples = True
         rows.append(f"### {item['repo']}")
         rows.append("")
         rows.append(f"Review scope: {review['scope']}")
@@ -159,8 +162,14 @@ def _markdown(data: dict) -> str:
             source = f" ({fn['source']})" if fn.get("source") else ""
             rows.append(f"- **FN** `{fn.get('key', fn.get('pattern', '?'))}`{source} — {fn['reason']}")
         rows.append("")
-    if not any_review:
-        rows.append("No manual spot-check annotations were supplied for this run.")
+    if reviewed_scopes and not error_examples:
+        rows.append("The targeted spot checks below found no reviewed false-positive or false-negative examples after the current hardening pass:")
+        rows.append("")
+        for repo, scope in reviewed_scopes:
+            rows.append(f"- **{repo}** — {scope}")
+        rows.append("")
+    elif not reviewed_scopes:
+        rows.append("No manual spot-check scopes were supplied for this run.")
         rows.append("")
     rows += [
         "## Reproduction",
